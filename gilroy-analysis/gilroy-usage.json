@@ -1,0 +1,332 @@
+{
+  "bodyFont": {
+    "fontFamily": "\"Open Sans\", sans-serif",
+    "fontSize": "14px",
+    "fontWeight": "400",
+    "color": "rgb(55, 57, 61)"
+  },
+  "statistics": {
+    "gilroyElements": 10,
+    "openSansElements": 13,
+    "otherElements": 0
+  },
+  "navigation": [],
+  "paragraphs": [
+    {
+      "element": "P.",
+      "text": "Admin login:",
+      "fontFamily": "Gilroy, Arial, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "color": "rgb(102, 102, 102)",
+      "hasGilroy": true
+    },
+    {
+      "element": "H2.subheading-2-2 otp success-text",
+      "text": "Delete Course",
+      "fontFamily": "Taymilkbar, Arial, sans-serif",
+      "fontSize": "32px",
+      "fontWeight": "400",
+      "color": "rgb(0, 0, 0)",
+      "hasGilroy": false
+    },
+    {
+      "element": "P.otp-p success-p",
+      "text": "Are you sue you want to delete this course?",
+      "fontFamily": "Gilroy, Arial, sans-serif",
+      "fontSize": "18px",
+      "fontWeight": "400",
+      "color": "rgb(0, 0, 0)",
+      "hasGilroy": true
+    },
+    {
+      "element": "P.courses-p truncate-2-lines",
+      "text": "Study at this Business Summer School at Yale, for ",
+      "fontFamily": "Gilroy, Arial, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "color": "rgb(73, 73, 73)",
+      "hasGilroy": true
+    },
+    {
+      "element": "P.course-button-p hide",
+      "text": "Edit course",
+      "fontFamily": "Gilroy, Arial, sans-serif",
+      "fontSize": "18px",
+      "fontWeight": "400",
+      "color": "rgb(200, 101, 39)",
+      "hasGilroy": true
+    },
+    {
+      "element": "P.course-button-p hide",
+      "text": "View course",
+      "fontFamily": "Gilroy, Arial, sans-serif",
+      "fontSize": "18px",
+      "fontWeight": "400",
+      "color": "rgb(200, 101, 39)",
+      "hasGilroy": true
+    },
+    {
+      "element": "P.course-button-p hide",
+      "text": "View course",
+      "fontFamily": "Gilroy, Arial, sans-serif",
+      "fontSize": "18px",
+      "fontWeight": "400",
+      "color": "rgb(200, 101, 39)",
+      "hasGilroy": true
+    },
+    {
+      "element": "P.fs-consent_banner_paragraph",
+      "text": "By clicking \"Accept\", you agree to the storing of ",
+      "fontFamily": "Gilroy, Arial, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "color": "rgb(73, 73, 73)",
+      "hasGilroy": true
+    },
+    {
+      "element": "P.fs-consent_prefs_description",
+      "text": "Necessary for the site to function. Always On.",
+      "fontFamily": "Gilroy, Arial, sans-serif",
+      "fontSize": "12px",
+      "fontWeight": "400",
+      "color": "rgb(73, 73, 73)",
+      "hasGilroy": true
+    },
+    {
+      "element": "P.fs-consent_prefs_description",
+      "text": "Used for targeted advertising.",
+      "fontFamily": "Gilroy, Arial, sans-serif",
+      "fontSize": "12px",
+      "fontWeight": "400",
+      "color": "rgb(73, 73, 73)",
+      "hasGilroy": true
+    }
+  ],
+  "bodyText": [
+    {
+      "element": "DIV.main-text",
+      "text": "Shahriar",
+      "fontFamily": "Gilroy, Arial, sans-serif",
+      "fontSize": "20.8px",
+      "fontWeight": "400"
+    },
+    {
+      "element": "DIV.text-block-150 menu-list",
+      "text": "Dashboard",
+      "fontFamily": "Gilroy, Arial, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "300"
+    },
+    {
+      "element": "DIV.text-block-150 menu-list",
+      "text": "Provider",
+      "fontFamily": "Gilroy, Arial, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "300"
+    },
+    {
+      "element": "DIV.main-text",
+      "text": "Shahriar",
+      "fontFamily": "Gilroy, Arial, sans-serif",
+      "fontSize": "20.8px",
+      "fontWeight": "400"
+    },
+    {
+      "element": "DIV.list-title side-nav",
+      "text": "Dashboard",
+      "fontFamily": "Gilroy, Arial, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400"
+    },
+    {
+      "element": "DIV.list-title side-nav",
+      "text": "Dashboard",
+      "fontFamily": "Gilroy, Arial, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400"
+    },
+    {
+      "element": "DIV.list-title side-nav",
+      "text": "Provider",
+      "fontFamily": "Gilroy, Arial, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400"
+    },
+    {
+      "element": "DIV.list-title",
+      "text": "Support",
+      "fontFamily": "Gilroy, Arial, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400"
+    },
+    {
+      "element": "DIV.list-title",
+      "text": "Settings",
+      "fontFamily": "Gilroy, Arial, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400"
+    },
+    {
+      "element": "DIV.list-title profile-name hide",
+      "text": "Name Surname",
+      "fontFamily": "Gilroy, Arial, sans-serif",
+      "fontSize": "14.8px",
+      "fontWeight": "600"
+    }
+  ],
+  "buttons": [
+    {
+      "element": "BUTTON.",
+      "text": "Submit",
+      "fontFamily": "\"Open Sans\", sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "hasGilroy": false
+    },
+    {
+      "element": "DIV.button-group",
+      "text": "CancelDelete",
+      "fontFamily": "\"Open Sans\", sans-serif",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "hasGilroy": false
+    },
+    {
+      "element": "DIV.main-button delete-button",
+      "text": "Cancel",
+      "fontFamily": "\"Open Sans\", sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "hasGilroy": false
+    },
+    {
+      "element": "A.main-button alert w-button",
+      "text": "Delete",
+      "fontFamily": "\"Open Sans\", sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "hasGilroy": false
+    },
+    {
+      "element": "DIV.menu-button-2 w-nav-button",
+      "text": "",
+      "fontFamily": "\"Open Sans\", sans-serif",
+      "fontSize": "24px",
+      "fontWeight": "400",
+      "hasGilroy": false
+    },
+    {
+      "element": "A.main-button create-new-course-button sidebar w-button",
+      "text": "Create new course",
+      "fontFamily": "Gilroy, Arial, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "hasGilroy": true
+    },
+    {
+      "element": "DIV.create-new-course-button-wrapper",
+      "text": "Create new course",
+      "fontFamily": "\"Open Sans\", sans-serif",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "hasGilroy": false
+    },
+    {
+      "element": "A.main-button create-new-course-button sidebar w-button",
+      "text": "Create new course",
+      "fontFamily": "\"Open Sans\", sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "hasGilroy": false
+    },
+    {
+      "element": "INPUT.search-button w-button",
+      "text": "",
+      "fontFamily": "\"Open Sans\", sans-serif",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "hasGilroy": false
+    },
+    {
+      "element": "DIV.courses-button-wrapper",
+      "text": "Edit course\n  \n    \n  \n  \n    ",
+      "fontFamily": "\"Open Sans\", sans-serif",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "hasGilroy": false
+    }
+  ],
+  "cards": [
+    {
+      "card": "profile-info-dorpdown course-form check",
+      "title": {
+        "text": "Edit Profile",
+        "fontFamily": "\"Open Sans\", sans-serif",
+        "fontSize": "16px",
+        "fontWeight": "600"
+      },
+      "description": {
+        "text": "HS",
+        "fontFamily": "\"Open Sans\", sans-serif",
+        "fontSize": "20px",
+        "fontWeight": "600"
+      }
+    },
+    {
+      "card": "nav-container course-form",
+      "title": {
+        "text": "Edit Profile",
+        "fontFamily": "\"Open Sans\", sans-serif",
+        "fontSize": "16px",
+        "fontWeight": "400"
+      },
+      "description": {
+        "text": "Dashboard",
+        "fontFamily": "Gilroy, Arial, sans-serif",
+        "fontSize": "16px",
+        "fontWeight": "300"
+      }
+    },
+    {
+      "card": "view-course-section",
+      "title": {
+        "text": "Dashboard",
+        "fontFamily": "Gilroy, Arial, sans-serif",
+        "fontSize": "16px",
+        "fontWeight": "400"
+      },
+      "description": {
+        "text": "HS",
+        "fontFamily": "Gilroy, Arial, sans-serif",
+        "fontSize": "20px",
+        "fontWeight": "400"
+      }
+    },
+    {
+      "card": "courses_menu",
+      "title": {
+        "text": "Dashboard",
+        "fontFamily": "Gilroy, Arial, sans-serif",
+        "fontSize": "16px",
+        "fontWeight": "400"
+      },
+      "description": null
+    },
+    {
+      "card": "view-courses-wrapper",
+      "title": {
+        "text": "You haven’t created any course",
+        "fontFamily": "Taymilkbar, Arial, sans-serif",
+        "fontSize": "36px",
+        "fontWeight": "400"
+      },
+      "description": {
+        "text": "",
+        "fontFamily": "Taymilkbar, Arial, sans-serif",
+        "fontSize": "36px",
+        "fontWeight": "400"
+      }
+    }
+  ]
+}

@@ -1,16 +1,31 @@
 {
-  "name": "ss-course",
+  "name": "summerschools-rebuild",
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "SummerSchools Course Management System with Webflow CMS Integration",
+  "main": "index.html",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "vercel dev",
+    "deploy": "vercel --prod",
+    "test": "echo \"No tests configured\""
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
-  "dependencies": {
-    "fs-extra": "^11.3.1",
-    "puppeteer": "^24.16.2"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rhiday/Summerschools-rebuild.git"
+  },
+  "keywords": [
+    "summerschools",
+    "courses",
+    "webflow",
+    "cms"
+  ],
+  "author": "Rhiday",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rhiday/Summerschools-rebuild/issues"
+  },
+  "homepage": "https://github.com/rhiday/Summerschools-rebuild#readme",
+  "dependencies": {},
+  "devDependencies": {
+    "vercel": "^32.0.0"
   }
 }

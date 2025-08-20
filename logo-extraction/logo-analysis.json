@@ -1,0 +1,179 @@
+{
+  "url": "https://www.summerschools.com/view-courses",
+  "timestamp": "2025-08-20T11:55:19.718Z",
+  "logos": [
+    {
+      "type": "image",
+      "element": "IMG.logo-header",
+      "src": "https://cdn.prod.website-files.com/672bbb0fffd67079e532df67/6842ef5bd60a458948e48e5c_Logo%20Wrapper.png",
+      "alt": "",
+      "width": 205.9140625,
+      "height": 40,
+      "position": {
+        "top": 19.5,
+        "left": 24
+      },
+      "styles": {
+        "maxWidth": "none",
+        "maxHeight": "none",
+        "objectFit": "contain"
+      }
+    },
+    {
+      "type": "image",
+      "element": "IMG.dahboard-logo dashboard",
+      "src": "https://cdn.prod.website-files.com/672bbb0fffd67079e532df67/6842ef5bd60a458948e48e5c_Logo%20Wrapper.png",
+      "alt": "",
+      "width": 112.109375,
+      "height": 40,
+      "position": {
+        "top": 17,
+        "left": 32
+      },
+      "styles": {
+        "maxWidth": "100%",
+        "maxHeight": "none",
+        "objectFit": "fill"
+      }
+    },
+    {
+      "type": "image",
+      "element": "IMG.dahboard-logo dashboard",
+      "src": "https://cdn.prod.website-files.com/618106862e0b3862ab15c931/63aedda6b337a654dbf891ad_Summer%20Schools%202%20Blue.png",
+      "alt": "",
+      "width": 0,
+      "height": 0,
+      "position": {
+        "top": 0,
+        "left": 0
+      },
+      "styles": {
+        "maxWidth": "100%",
+        "maxHeight": "none",
+        "objectFit": "fill"
+      }
+    },
+    {
+      "type": "image",
+      "element": "IMG.courses-owner-logo",
+      "src": "https://cdn.prod.website-files.com/672bbb0fffd67079e532df67/672bbb0fffd67079e532e2cc_Summer%20Schools%202%20White.webp",
+      "alt": "",
+      "width": 0,
+      "height": 0,
+      "position": {
+        "top": 0,
+        "left": 0
+      },
+      "styles": {
+        "maxWidth": "100%",
+        "maxHeight": "39.625px",
+        "objectFit": "contain"
+      }
+    }
+  ],
+  "navigationStructure": [
+    {
+      "tag": "NAV",
+      "className": "nav-menu-3 test w-nav-menu",
+      "position": {
+        "top": 0,
+        "left": 0
+      },
+      "children": [
+        {
+          "tag": "A",
+          "className": "nav-link-3 desktop-hide check w-nav-link w--current",
+          "textContent": "Dashboard",
+          "position": {
+            "top": 0,
+            "left": 0
+          }
+        },
+        {
+          "tag": "A",
+          "className": "nav-link-3 desktop-hide check w-nav-link",
+          "textContent": "Provider",
+          "position": {
+            "top": 0,
+            "left": 0
+          }
+        },
+        {
+          "tag": "A",
+          "className": "nav-link-3 desktop-hide check w-nav-link",
+          "textContent": "Help",
+          "position": {
+            "top": 0,
+            "left": 0
+          }
+        },
+        {
+          "tag": "DIV",
+          "className": "profile-info-dorpdown course-form check",
+          "textContent": "HSHasanShahriar\n  \n    \n      \n    \n    \n      \n  ",
+          "position": {
+            "top": 0,
+            "left": 0
+          }
+        }
+      ]
+    },
+    {
+      "tag": "NAV",
+      "className": "profile_dropdown-list w-dropdown-list",
+      "position": {
+        "top": 0,
+        "left": 0
+      },
+      "children": [
+        {
+          "tag": "A",
+          "className": "dashboard-list dropdown w-inline-block",
+          "textContent": "Edit Profile",
+          "position": {
+            "top": 0,
+            "left": 0
+          }
+        },
+        {
+          "tag": "A",
+          "className": "dashboard-list dropdown w-inline-block",
+          "textContent": "Log out",
+          "position": {
+            "top": 0,
+            "left": 0
+          }
+        }
+      ]
+    },
+    {
+      "tag": "NAV",
+      "className": "profile_dropdown-list w-dropdown-list",
+      "position": {
+        "top": 0,
+        "left": 0
+      },
+      "children": [
+        {
+          "tag": "A",
+          "className": "dashboard-list dropdown w-inline-block",
+          "textContent": "Edit Profile",
+          "position": {
+            "top": 0,
+            "left": 0
+          }
+        },
+        {
+          "tag": "A",
+          "className": "dashboard-list dropdown w-inline-block",
+          "textContent": "Log out",
+          "position": {
+            "top": 0,
+            "left": 0
+          }
+        }
+      ]
+    }
+  ],
+  "pageTitle": "View Courses"
+}
