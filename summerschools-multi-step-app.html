@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Course Creator - SummerSchools Style</title>
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&family=Domine:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="fonts.css">
     <style>
         /* SummerSchools.com Design Variables */
         :root {
@@ -18,11 +19,13 @@
             --success-color: #28a745;
             --warning-color: #ffc107;
             
-            /* Extracted Font Variables from Original SummerSchools */
-            --font-primary: "Open Sans", sans-serif;
-            --font-headings: "Domine", sans-serif;
-            --font-buttons: "Open Sans", sans-serif;
-            --font-family: "Open Sans", sans-serif;
+            /* Extracted Font Variables from Original SummerSchools - Using Local Fonts */
+            --font-primary: "Open Sans", "Open Sans Local", sans-serif;
+            --font-headings-h1: "Taymilkbar", Arial, sans-serif;
+            --font-headings-h2: "Domine", sans-serif;
+            --font-headings-general: "Gilroy", Arial, sans-serif;
+            --font-buttons: "Open Sans", "Open Sans Local", sans-serif;
+            --font-family: "Open Sans", "Open Sans Local", sans-serif;
             
             --font-size-base: 14px;
             --font-size-h1: 36px;
@@ -76,7 +79,7 @@
         .navbar .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 0 var(--spacing-md);
+            padding: 0 var(--spacing-lg);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -85,25 +88,15 @@
         .logo {
             display: flex;
             align-items: center;
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--secondary-color);
             text-decoration: none;
+            padding-left: 0;
         }
 
-        .logo::before {
-            content: "SS";
-            background: var(--primary-color);
-            color: white;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            font-weight: bold;
-            margin-right: 12px;
+        .logo img {
+            height: 40px;
+            width: auto;
+            max-width: 206px;
+            object-fit: contain;
         }
 
         .nav-menu {
@@ -159,7 +152,19 @@
             width: 250px;
             background: var(--white);
             border-right: 1px solid var(--border-color);
-            padding: var(--spacing-xl) 0;
+            padding: var(--spacing-md) 0;
+        }
+
+        .sidebar-logo {
+            padding: var(--spacing-md) var(--spacing-lg);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .sidebar-logo img {
+            height: 40px;
+            width: auto;
+            max-width: 112px;
+            object-fit: contain;
         }
 
         .sidebar-menu {
@@ -209,9 +214,9 @@
         }
 
         .dashboard-title {
-            font-family: var(--font-headings);
+            font-family: var(--font-headings-h1);
             font-size: var(--font-size-h1);
-            font-weight: var(--font-weight-bold);
+            font-weight: 400;
             color: var(--secondary-color);
             margin-bottom: var(--spacing-md);
         }
@@ -275,9 +280,9 @@
         }
 
         .course-title {
-            font-family: var(--font-headings);
+            font-family: var(--font-headings-general);
             font-size: var(--font-size-h3);
-            font-weight: var(--font-weight-bold);
+            font-weight: 600;
             color: var(--secondary-color);
             margin-bottom: var(--spacing-sm);
         }
@@ -345,9 +350,9 @@
         }
 
         .form-title {
-            font-family: var(--font-headings);
+            font-family: var(--font-headings-h2);
             font-size: var(--font-size-h2);
-            font-weight: var(--font-weight-bold);
+            font-weight: 400;
             color: var(--secondary-color);
             margin-bottom: var(--spacing-sm);
         }
@@ -436,9 +441,9 @@
         }
 
         .form-section-title {
-            font-family: var(--font-headings);
+            font-family: var(--font-headings-general);
             font-size: var(--font-size-h3);
-            font-weight: var(--font-weight-semibold);
+            font-weight: 600;
             color: var(--primary-color);
             margin-bottom: var(--spacing-md);
             text-transform: uppercase;
@@ -565,9 +570,9 @@
         }
 
         .success-title {
-            font-family: var(--font-headings);
+            font-family: var(--font-headings-h1);
             font-size: var(--font-size-h2);
-            font-weight: var(--font-weight-bold);
+            font-weight: 400;
             color: var(--secondary-color);
             margin-bottom: var(--spacing-md);
         }
@@ -632,7 +637,9 @@
     <!-- Navigation -->
     <nav class="navbar">
         <div class="container">
-            <a href="#" class="logo">SUMMER SCHOOLS</a>
+            <a href="#" class="logo">
+                <img src="summerschools-logo.png" alt="Summer Schools" />
+            </a>
             <ul class="nav-menu">
                 <li><a href="#" class="nav-item active" onclick="showDashboard()">Dashboard</a></li>
                 <li><a href="#" class="nav-item" onclick="showProvider()">Provider</a></li>
@@ -648,6 +655,9 @@
     <div class="main-layout">
         <!-- Sidebar -->
         <aside class="sidebar">
+            <div class="sidebar-logo">
+                <img src="summerschools-logo.png" alt="Summer Schools" />
+            </div>
             <ul class="sidebar-menu">
                 <li class="sidebar-item">
                     <a href="#" class="sidebar-link active" onclick="showDashboard()">Dashboard</a>

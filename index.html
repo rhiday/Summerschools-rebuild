@@ -79,7 +79,7 @@
         .navbar .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 0 var(--spacing-md);
+            padding: 0 var(--spacing-lg);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -88,25 +88,15 @@
         .logo {
             display: flex;
             align-items: center;
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--secondary-color);
             text-decoration: none;
+            padding-left: 0;
         }
 
-        .logo::before {
-            content: "SS";
-            background: var(--primary-color);
-            color: white;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            font-weight: bold;
-            margin-right: 12px;
+        .logo img {
+            height: 40px;
+            width: auto;
+            max-width: 206px;
+            object-fit: contain;
         }
 
         .nav-menu {
@@ -162,7 +152,19 @@
             width: 250px;
             background: var(--white);
             border-right: 1px solid var(--border-color);
-            padding: var(--spacing-xl) 0;
+            padding: var(--spacing-md) 0;
+        }
+
+        .sidebar-logo {
+            padding: var(--spacing-md) var(--spacing-lg);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .sidebar-logo img {
+            height: 40px;
+            width: auto;
+            max-width: 112px;
+            object-fit: contain;
         }
 
         .sidebar-menu {
@@ -635,7 +637,9 @@
     <!-- Navigation -->
     <nav class="navbar">
         <div class="container">
-            <a href="#" class="logo">SUMMER SCHOOLS</a>
+            <a href="#" class="logo">
+                <img src="summerschools-logo.png" alt="Summer Schools" />
+            </a>
             <ul class="nav-menu">
                 <li><a href="#" class="nav-item active" onclick="showDashboard()">Dashboard</a></li>
                 <li><a href="#" class="nav-item" onclick="showProvider()">Provider</a></li>
@@ -651,6 +655,9 @@
     <div class="main-layout">
         <!-- Sidebar -->
         <aside class="sidebar">
+            <div class="sidebar-logo">
+                <img src="summerschools-logo.png" alt="Summer Schools" />
+            </div>
             <ul class="sidebar-menu">
                 <li class="sidebar-item">
                     <a href="#" class="sidebar-link active" onclick="showDashboard()">Dashboard</a>
