@@ -331,6 +331,16 @@
             color: var(--text-color);
             font-size: 14px;
             margin-bottom: var(--spacing-sm);
+            display: flex;
+            align-items: center;
+        }
+
+        .course-dates i {
+            width: 16px;
+            height: 16px;
+            margin-right: 6px;
+            opacity: 0.7;
+            stroke-width: 1.5;
         }
 
         .status {
@@ -797,7 +807,7 @@
                                 <span class="course-duration">2 weeks</span>
                             </div>
                             <div class="course-dates">
-                                📅 15 Jul 2025 - 29 Jul 2025
+                                <i data-lucide="calendar"></i>15 Jul 2025 - 29 Jul 2025
                             </div>
                             <span class="status">In Review</span>
                             <div class="course-actions">
@@ -1774,7 +1784,9 @@
                         <span class="course-price">${course.price}</span>
                         <span class="course-duration">${course.duration}</span>
                     </div>
-                    <div class="course-dates">📅 ${course.dates}</div>
+                    <div class="course-dates">
+                        <i data-lucide="calendar"></i>${course.dates}
+                    </div>
                     <span class="status">${course.status}</span>
                     <div class="course-actions">
                         ${isArchived ? `
