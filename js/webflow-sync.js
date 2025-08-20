@@ -370,13 +370,25 @@ class WebflowSync {
                 return;
             }
 
-            // Get form data
+            // Get form data including rich text content
             const formData = new FormData(document.getElementById('multiStepForm'));
             const courseData = {};
             
+            // Get regular form fields
             for (let [key, value] of formData.entries()) {
                 courseData[key] = value;
             }
+
+            // Get rich text content from contenteditable divs
+            const richTextFields = document.querySelectorAll('.rich-text-content');
+            richTextFields.forEach(field => {
+                const fieldName = field.dataset.field;
+                if (fieldName) {
+                    courseData[fieldName] = field.innerHTML || '';
+                }
+            });
+
+            console.log('Course data being submitted:', courseData);
 
             try {
                 // Show loading state
@@ -393,6 +405,8 @@ class WebflowSync {
                     // Create new course
                     result = await this.createCourse(courseData);
                 }
+                
+                console.log('Submission successful:', result);
                 
                 // Show success view
                 document.querySelector('.form-header').style.display = 'none';

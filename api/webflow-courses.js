@@ -7,8 +7,11 @@ const SITE_ID = process.env.WEBFLOW_SITE_ID || '672bbb0fffd67079e532dfd8'; // Yo
 
 // Helper function to format course data for Webflow
 function formatCourseForWebflow(courseData) {
+    console.log('Input courseData:', courseData);
+    
     // Generate a URL-safe slug
     const generateSlug = (name) => {
+        if (!name) return 'untitled-course';
         return name.toLowerCase()
             .replace(/[^a-z0-9\s-]/g, '')
             .replace(/\s+/g, '-')
@@ -16,54 +19,57 @@ function formatCourseForWebflow(courseData) {
             .trim();
     };
 
-    // Format dates properly
+    // Format dates properly for Webflow
     const formatDate = (dateString) => {
-        if (!dateString) return '';
-        const date = new Date(dateString);
-        return date.toISOString();
-    };
-
-    // Prepare the Webflow CMS item structure
-    const webflowItem = {
-        fields: {
-            // Basic Info - Required fields
-            name: courseData.courseName || courseData['course-name'] || '',
-            slug: generateSlug(courseData.courseName || courseData['course-name'] || ''),
-            
-            // Course Details - Rich Text field
-            'course-description': courseData.courseDetails || courseData['course-details'] || '',
-            
-            // Custom Fields from the form
-            'age-range': courseData.ageRange || `${courseData['min-age'] || 13}-${courseData['max-age'] || 18}`,
-            'course-fee': parseFloat(courseData.courseFee || courseData['course-fee'] || 0),
-            'course-duration': courseData.courseDuration || courseData['course-duration'] || '',
-            
-            // Dates
-            'start-date': formatDate(courseData.startDate || courseData['start-date']),
-            'end-date': formatDate(courseData.endDate || courseData['end-date']),
-            
-            // Location
-            'location': courseData.location || '',
-            
-            // Category - Map to existing categories in Webflow
-            'category': courseData.category || 'General',
-            
-            // Provider Information
-            'provider-name': courseData.providerName || courseData['School-name'] || '',
-            'provider-email': courseData.contactEmail || courseData['contact-email'] || '',
-            'provider-link': courseData.providerLink || courseData['provider-link'] || '',
-            
-            // Additional Details
-            'accommodation': courseData.accommodation || '',
-            'tuition-details': courseData.tuition || '',
-            'extra-activities': courseData.extraActivities || courseData['extra-activities'] || '',
-            
-            // Status fields
-            '_archived': false,
-            '_draft': courseData.status === 'draft' || true // Default to draft
+        if (!dateString) return null;
+        try {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return null;
+            return date.toISOString();
+        } catch (e) {
+            return null;
         }
     };
 
+    // Get the course name
+    const courseName = courseData.courseName || courseData['course-name'] || 'Untitled Course';
+    
+    // Build age range string
+    const minAge = courseData['min-age'] || courseData.minAge || 13;
+    const maxAge = courseData['max-age'] || courseData.maxAge || 18;
+    const ageRange = `${minAge}-${maxAge}`;
+
+    // Simple field mapping based on what's actually in your Webflow collection
+    const webflowItem = {
+        fields: {
+            // Basic required fields
+            name: courseName,
+            slug: generateSlug(courseName),
+            
+            // Simple text fields only - avoid complex objects
+            age: ageRange,
+            fees: parseFloat(courseData['course-fee'] || courseData.courseFee || 0),
+            duration: courseData['course-duration'] || courseData.courseDuration || '',
+            location: courseData.location || '',
+            
+            // Dates as ISO strings
+            dates: `${courseData['start-date'] || ''} to ${courseData['end-date'] || ''}`,
+            
+            // Provider info
+            provider: courseData['contact-email'] || courseData.contactEmail || '',
+            
+            // Rich text content
+            accommodation: courseData.accommodation || '',
+            'tuition-details': courseData.tuition || '',
+            'extra-activities': courseData['extra-activities'] || courseData.extraActivities || '',
+            
+            // Status
+            '_archived': false,
+            '_draft': true
+        }
+    };
+
+    console.log('Formatted webflowItem:', webflowItem);
     return webflowItem;
 }
 
@@ -92,34 +98,46 @@ export default async function handler(req, res) {
         switch (action || req.method) {
             case 'CREATE':
             case 'POST':
-                // Create new course
-                const newCourse = formatCourseForWebflow(courseData);
-                
-                response = await fetch(`https://api.webflow.com/collections/${COLLECTION_ID}/items`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${WEBFLOW_API_TOKEN}`,
-                        'Content-Type': 'application/json',
-                        'accept-version': '1.0.0'
-                    },
-                    body: JSON.stringify(newCourse)
-                });
+                try {
+                    console.log('Creating course with data:', courseData);
+                    
+                    // Create new course
+                    const newCourse = formatCourseForWebflow(courseData);
+                    console.log('Sending to Webflow:', JSON.stringify(newCourse, null, 2));
+                    
+                    response = await fetch(`https://api.webflow.com/collections/${COLLECTION_ID}/items`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${WEBFLOW_API_TOKEN}`,
+                            'Content-Type': 'application/json',
+                            'accept-version': '1.0.0'
+                        },
+                        body: JSON.stringify(newCourse)
+                    });
 
-                if (!response.ok) {
-                    const error = await response.text();
-                    throw new Error(`Webflow API error: ${response.status} - ${error}`);
+                    console.log('Webflow response status:', response.status);
+                    
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error('Webflow API error response:', errorText);
+                        throw new Error(`Webflow API error: ${response.status} - ${errorText}`);
+                    }
+
+                    result = await response.json();
+                    console.log('Webflow success response:', result);
+                    
+                    // Don't publish immediately - keep as draft
+                    // await publishItem(result._id);
+                    
+                    return res.status(200).json({
+                        success: true,
+                        message: 'Course created successfully',
+                        data: result
+                    });
+                } catch (createError) {
+                    console.error('Create course error:', createError);
+                    throw createError;
                 }
-
-                result = await response.json();
-                
-                // Publish the item
-                await publishItem(result._id);
-                
-                return res.status(200).json({
-                    success: true,
-                    message: 'Course created successfully',
-                    data: result
-                });
 
             case 'UPDATE':
             case 'PUT':
