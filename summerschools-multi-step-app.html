@@ -77,8 +77,9 @@
         }
 
         .navbar .container {
-            max-width: 1200px;
-            margin: 0 auto;
+            width: 100%;
+            max-width: 100%;
+            margin: 0;
             padding: 0 var(--spacing-lg);
             display: flex;
             justify-content: space-between;
@@ -152,19 +153,7 @@
             width: 250px;
             background: var(--white);
             border-right: 1px solid var(--border-color);
-            padding: var(--spacing-md) 0;
-        }
-
-        .sidebar-logo {
-            padding: var(--spacing-md) var(--spacing-lg);
-            margin-bottom: var(--spacing-md);
-        }
-
-        .sidebar-logo img {
-            height: 40px;
-            width: auto;
-            max-width: 112px;
-            object-fit: contain;
+            padding: var(--spacing-xl) 0;
         }
 
         .sidebar-menu {
@@ -655,9 +644,6 @@
     <div class="main-layout">
         <!-- Sidebar -->
         <aside class="sidebar">
-            <div class="sidebar-logo">
-                <img src="summerschools-logo.png" alt="Summer Schools" />
-            </div>
             <ul class="sidebar-menu">
                 <li class="sidebar-item">
                     <a href="#" class="sidebar-link active" onclick="showDashboard()">Dashboard</a>
