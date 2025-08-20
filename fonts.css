@@ -1,0 +1,61 @@
+/* SummerSchools Original Fonts - Local Font Files */
+
+/* TAYMilkbar Font Family - Used for H1 headings */
+@font-face {
+    font-family: 'Taymilkbar';
+    src: url('./fonts/TAYMilkbarRegular.woff2') format('woff2'),
+         url('./fonts/TAYMilkbar.otf') format('opentype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Gilroy Font Family - Used for various elements */
+@font-face {
+    font-family: 'Gilroy';
+    src: url('./fonts/Gilroy-Light.otf') format('opentype');
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Gilroy';
+    src: url('./fonts/Gilroy-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Gilroy';
+    src: url('./fonts/Gilroy-Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Gilroy';
+    src: url('./fonts/Gilroy-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Gilroy';
+    src: url('./fonts/Gilroy-ExtraBold.otf') format('opentype');
+    font-weight: 800;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Open Sans - Local version for body text */
+@font-face {
+    font-family: 'Open Sans Local';
+    src: url('./fonts/OpenSans-Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
