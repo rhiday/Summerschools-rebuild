@@ -770,6 +770,36 @@
             text-decoration: underline;
         }
 
+        /* Word Count Display */
+        .word-count-display {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: rgba(248, 249, 250, 0.8);
+            border-top: 1px solid var(--border-color);
+            font-size: 12px;
+            color: #666;
+            border-radius: 0 0 var(--border-radius) var(--border-radius);
+        }
+
+        .word-count {
+            font-weight: 500;
+        }
+
+        .word-count.warning {
+            color: #f39c12;
+        }
+
+        .word-count.danger {
+            color: #e74c3c;
+        }
+
+        .word-count-tip {
+            font-style: italic;
+            opacity: 0.8;
+        }
+
         .form-input:focus,
         .form-textarea:focus,
         .form-select:focus {
@@ -1133,8 +1163,13 @@
                                         class="rich-text-content" 
                                         contenteditable="true" 
                                         data-field="accommodation"
+                                        data-max-words="250"
                                         data-placeholder="Describe the accommodation options, such as on-campus housing, shared rooms, or private facilities..."
                                     ></div>
+                                    <div class="word-count-display">
+                                        <span class="word-count-tip">Keep it concise and informative</span>
+                                        <span class="word-count" data-field="accommodation">250 words remaining</span>
+                                    </div>
                                 </div>
                                 <textarea id="accommodation" name="accommodation" style="display: none;" required></textarea>
                             </div>
@@ -1163,8 +1198,13 @@
                                         class="rich-text-content" 
                                         contenteditable="true" 
                                         data-field="tuition"
+                                        data-max-words="250"
                                         data-placeholder="Input bullet points only, like below: • Learn the Oxford way with tutorial-style teaching in small groups..."
                                     ></div>
+                                    <div class="word-count-display">
+                                        <span class="word-count-tip">Use bullet points for better readability</span>
+                                        <span class="word-count" data-field="tuition">250 words remaining</span>
+                                    </div>
                                 </div>
                                 <textarea id="tuition" name="tuition" style="display: none;" required></textarea>
                             </div>
@@ -1193,8 +1233,13 @@
                                         class="rich-text-content" 
                                         contenteditable="true" 
                                         data-field="extra-activities"
+                                        data-max-words="250"
                                         data-placeholder="Input bullet points only, like below: • Cultural activities and excursions • Sports and recreational programs..."
                                     ></div>
+                                    <div class="word-count-display">
+                                        <span class="word-count-tip">Highlight unique activities and experiences</span>
+                                        <span class="word-count" data-field="extra-activities">250 words remaining</span>
+                                    </div>
                                 </div>
                                 <textarea id="extra-activities" name="extra-activities" style="display: none;" required></textarea>
                             </div>

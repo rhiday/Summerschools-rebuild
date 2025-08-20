@@ -24,7 +24,9 @@
     "url": "https://github.com/rhiday/Summerschools-rebuild/issues"
   },
   "homepage": "https://github.com/rhiday/Summerschools-rebuild#readme",
-  "dependencies": {},
+  "dependencies": {
+    "dotenv": "^17.2.1"
+  },
   "devDependencies": {
     "vercel": "^32.0.0"
   }

@@ -1,9 +1,18 @@
-// Vercel Serverless Function for Webflow CMS Integration
+// Vercel Serverless Function for Webflow CMS Integration (API v2)
 // This handles all CRUD operations for courses in Webflow CMS
+// Updated for Webflow API v2 (v1 was sunset January 1, 2025)
 
-const WEBFLOW_API_TOKEN = process.env.WEBFLOW_API_TOKEN || 'f7bc0de3a3b71c0f55c7bcec54744de991fa9a26882e1515ca458e187aadae5d';
-const COLLECTION_ID = '672bbb0fffd67079e532dfd9';
-const SITE_ID = process.env.WEBFLOW_SITE_ID || '672bbb0fffd67079e532dfd8'; // You'll need to get this from Webflow
+const WEBFLOW_API_TOKEN = process.env.WEBFLOW_API_TOKEN;
+const COLLECTION_ID = process.env.WEBFLOW_COLLECTION_ID || '672bbb0fffd67079e532dfd9';
+const SITE_ID = process.env.WEBFLOW_SITE_ID;
+
+// Validate required environment variables
+if (!WEBFLOW_API_TOKEN) {
+    console.error('WEBFLOW_API_TOKEN environment variable is required');
+}
+if (!SITE_ID) {
+    console.error('WEBFLOW_SITE_ID environment variable is required');
+} // You'll need to get this from Webflow
 
 // Helper function to format course data for Webflow
 function formatCourseForWebflow(courseData) {
@@ -40,8 +49,9 @@ function formatCourseForWebflow(courseData) {
     const ageRange = `${minAge}-${maxAge}`;
 
     // Simple field mapping based on what's actually in your Webflow collection
+    // Updated for API v2 format
     const webflowItem = {
-        fields: {
+        fieldData: {
             // Basic required fields
             name: courseName,
             slug: generateSlug(courseName),
@@ -63,10 +73,10 @@ function formatCourseForWebflow(courseData) {
             'tuition-details': courseData.tuition || '',
             'extra-activities': courseData['extra-activities'] || courseData.extraActivities || '',
             
-            // Status
-            '_archived': false,
-            '_draft': true
-        }
+            // Status - moved to top level in v2
+            '_archived': false
+        },
+        isDraft: true
     };
 
     console.log('Formatted webflowItem:', webflowItem);
@@ -105,12 +115,11 @@ export default async function handler(req, res) {
                     const newCourse = formatCourseForWebflow(courseData);
                     console.log('Sending to Webflow:', JSON.stringify(newCourse, null, 2));
                     
-                    response = await fetch(`https://api.webflow.com/collections/${COLLECTION_ID}/items`, {
+                    response = await fetch(`https://api.webflow.com/v2/collections/${COLLECTION_ID}/items`, {
                         method: 'POST',
                         headers: {
                             'Authorization': `Bearer ${WEBFLOW_API_TOKEN}`,
-                            'Content-Type': 'application/json',
-                            'accept-version': '1.0.0'
+                            'Content-Type': 'application/json'
                         },
                         body: JSON.stringify(newCourse)
                     });
@@ -119,7 +128,22 @@ export default async function handler(req, res) {
                     
                     if (!response.ok) {
                         const errorText = await response.text();
-                        console.error('Webflow API error response:', errorText);
+                        console.error('Webflow API error response:', {
+                            status: response.status,
+                            statusText: response.statusText,
+                            body: errorText,
+                            headers: Object.fromEntries(response.headers.entries())
+                        });
+                        
+                        // Return specific error messages for different status codes
+                        if (response.status === 401) {
+                            throw new Error('Invalid Webflow API token. Please check your credentials.');
+                        } else if (response.status === 400) {
+                            throw new Error(`Invalid request data: ${errorText}`);
+                        } else if (response.status === 404) {
+                            throw new Error('Webflow collection not found. Please check your collection ID.');
+                        }
+                        
                         throw new Error(`Webflow API error: ${response.status} - ${errorText}`);
                     }
 
@@ -151,12 +175,11 @@ export default async function handler(req, res) {
 
                 const updatedCourse = formatCourseForWebflow(courseData);
                 
-                response = await fetch(`https://api.webflow.com/collections/${COLLECTION_ID}/items/${courseId}`, {
-                    method: 'PUT',
+                response = await fetch(`https://api.webflow.com/v2/collections/${COLLECTION_ID}/items/${courseId}`, {
+                    method: 'PATCH',
                     headers: {
                         'Authorization': `Bearer ${WEBFLOW_API_TOKEN}`,
-                        'Content-Type': 'application/json',
-                        'accept-version': '1.0.0'
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify(updatedCourse)
                 });
@@ -186,11 +209,10 @@ export default async function handler(req, res) {
                     });
                 }
 
-                response = await fetch(`https://api.webflow.com/collections/${COLLECTION_ID}/items/${courseId}`, {
+                response = await fetch(`https://api.webflow.com/v2/collections/${COLLECTION_ID}/items/${courseId}`, {
                     method: 'DELETE',
                     headers: {
-                        'Authorization': `Bearer ${WEBFLOW_API_TOKEN}`,
-                        'accept-version': '1.0.0'
+                        'Authorization': `Bearer ${WEBFLOW_API_TOKEN}`
                     }
                 });
 
@@ -207,11 +229,10 @@ export default async function handler(req, res) {
             case 'LIST':
             case 'GET':
                 // Get all courses
-                response = await fetch(`https://api.webflow.com/collections/${COLLECTION_ID}/items`, {
+                response = await fetch(`https://api.webflow.com/v2/collections/${COLLECTION_ID}/items`, {
                     method: 'GET',
                     headers: {
-                        'Authorization': `Bearer ${WEBFLOW_API_TOKEN}`,
-                        'accept-version': '1.0.0'
+                        'Authorization': `Bearer ${WEBFLOW_API_TOKEN}`
                     }
                 });
 
@@ -237,11 +258,10 @@ export default async function handler(req, res) {
                 }
 
                 // First, get the original course
-                const getResponse = await fetch(`https://api.webflow.com/collections/${COLLECTION_ID}/items/${courseId}`, {
+                const getResponse = await fetch(`https://api.webflow.com/v2/collections/${COLLECTION_ID}/items/${courseId}`, {
                     method: 'GET',
                     headers: {
-                        'Authorization': `Bearer ${WEBFLOW_API_TOKEN}`,
-                        'accept-version': '1.0.0'
+                        'Authorization': `Bearer ${WEBFLOW_API_TOKEN}`
                     }
                 });
 
@@ -267,12 +287,11 @@ export default async function handler(req, res) {
                 delete duplicatedCourse.updated;
 
                 // Create the duplicate
-                const createResponse = await fetch(`https://api.webflow.com/collections/${COLLECTION_ID}/items`, {
+                const createResponse = await fetch(`https://api.webflow.com/v2/collections/${COLLECTION_ID}/items`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${WEBFLOW_API_TOKEN}`,
-                        'Content-Type': 'application/json',
-                        'accept-version': '1.0.0'
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify(duplicatedCourse)
                 });
@@ -296,10 +315,22 @@ export default async function handler(req, res) {
                 });
         }
     } catch (error) {
-        console.error('Webflow API Error:', error);
-        return res.status(500).json({
+        console.error('Webflow API Error:', {
+            message: error.message,
+            stack: error.stack,
+            timestamp: new Date().toISOString(),
+            requestData: { action, courseId, ...courseData }
+        });
+        
+        // Return more specific error information
+        const errorMessage = error.message || 'An error occurred while processing your request';
+        const statusCode = error.message?.includes('Invalid Webflow API token') ? 401 : 
+                          error.message?.includes('not found') ? 404 : 500;
+        
+        return res.status(statusCode).json({
             success: false,
-            message: error.message || 'An error occurred while processing your request'
+            message: errorMessage,
+            error: process.env.NODE_ENV === 'development' ? error.stack : undefined
         });
     }
 }
@@ -307,15 +338,14 @@ export default async function handler(req, res) {
 // Helper function to publish items
 async function publishItem(itemId) {
     try {
-        const response = await fetch(`https://api.webflow.com/sites/${SITE_ID}/publish`, {
+        const response = await fetch(`https://api.webflow.com/v2/sites/${SITE_ID}/publish`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${WEBFLOW_API_TOKEN}`,
-                'Content-Type': 'application/json',
-                'accept-version': '1.0.0'
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                domains: ['summerschools.webflow.io'] // Update with your domain
+                publishToWebflowSubdomain: true
             })
         });
 
