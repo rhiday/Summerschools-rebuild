@@ -1,0 +1,1501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Creator - SummerSchools Style</title>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&family=Domine:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* SummerSchools.com Design Variables */
+        :root {
+            --primary-color: #FF6A3C;
+            --secondary-color: #182236;
+            --text-color: rgb(55, 57, 61);
+            --background-color: #F1DDC6;
+            --white: #ffffff;
+            --border-color: #E5E5E5;
+            --light-gray: #F8F9FA;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            
+            /* Extracted Font Variables from Original SummerSchools */
+            --font-primary: "Open Sans", sans-serif;
+            --font-headings: "Domine", sans-serif;
+            --font-buttons: "Open Sans", sans-serif;
+            --font-family: "Open Sans", sans-serif;
+            
+            --font-size-base: 14px;
+            --font-size-h1: 36px;
+            --font-size-h2: 24px;
+            --font-size-h3: 18px;
+            --font-size-button: 16px;
+            
+            --font-weight-normal: 400;
+            --font-weight-medium: 500;
+            --font-weight-semibold: 600;
+            --font-weight-bold: 700;
+            
+            --line-height-base: 1.6;
+            
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+            
+            --border-radius: 8px;
+            --border-radius-lg: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-primary);
+            font-size: var(--font-size-base);
+            color: var(--text-color);
+            background-color: var(--light-gray);
+            line-height: var(--line-height-base);
+            font-weight: var(--font-weight-normal);
+        }
+
+        /* Navigation - Exact SummerSchools Match */
+        .navbar {
+            background-color: var(--white);
+            border-bottom: 1px solid var(--border-color);
+            padding: var(--spacing-md) 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .navbar .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 var(--spacing-md);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--secondary-color);
+            text-decoration: none;
+        }
+
+        .logo::before {
+            content: "SS";
+            background: var(--primary-color);
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+            margin-right: 12px;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: var(--spacing-xl);
+            align-items: center;
+        }
+
+        .nav-item {
+            color: var(--text-color);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: var(--border-radius);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            color: var(--primary-color);
+            background-color: rgba(255, 106, 60, 0.1);
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--secondary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        /* Main Layout */
+        .main-layout {
+            display: flex;
+            min-height: calc(100vh - 80px);
+        }
+
+        /* Sidebar - Exact SummerSchools Match */
+        .sidebar {
+            width: 250px;
+            background: var(--white);
+            border-right: 1px solid var(--border-color);
+            padding: var(--spacing-xl) 0;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0 var(--spacing-lg);
+        }
+
+        .sidebar-item {
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            color: var(--text-color);
+            text-decoration: none;
+            border-radius: var(--border-radius);
+            transition: all 0.3s ease;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .sidebar-link:hover,
+        .sidebar-link.active {
+            background-color: var(--primary-color);
+            color: var(--white);
+        }
+
+        .sidebar-link::before {
+            content: "★";
+            margin-right: 12px;
+            opacity: 0.7;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: var(--spacing-xl);
+            background: var(--light-gray);
+            overflow-y: auto;
+        }
+
+        /* Dashboard View */
+        .dashboard-header {
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .dashboard-title {
+            font-family: var(--font-headings);
+            font-size: var(--font-size-h1);
+            font-weight: var(--font-weight-bold);
+            color: var(--secondary-color);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .create-course-btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 12px 24px;
+            background: var(--primary-color);
+            color: var(--white);
+            border: none;
+            border-radius: var(--border-radius-lg);
+            font-family: var(--font-buttons);
+            font-size: var(--font-size-button);
+            font-weight: var(--font-weight-semibold);
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .create-course-btn:hover {
+            background: #E55A31;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 106, 60, 0.3);
+        }
+
+        /* Course Grid - Fixed width instead of full-width */
+        .course-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: var(--spacing-lg);
+            margin-top: var(--spacing-xl);
+        }
+
+        .course-card {
+            background: var(--white);
+            border-radius: var(--border-radius-lg);
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            max-width: 400px;
+        }
+
+        .course-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        }
+
+        .course-image {
+            height: 200px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 48px;
+        }
+
+        .course-content {
+            padding: var(--spacing-lg);
+        }
+
+        .course-title {
+            font-family: var(--font-headings);
+            font-size: var(--font-size-h3);
+            font-weight: var(--font-weight-bold);
+            color: var(--secondary-color);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .course-description {
+            color: var(--text-color);
+            margin-bottom: var(--spacing-md);
+            line-height: 1.5;
+        }
+
+        .course-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .course-price {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .course-duration {
+            color: var(--text-color);
+            font-size: 14px;
+        }
+
+        .course-dates {
+            color: var(--text-color);
+            font-size: 14px;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            background: #FFF3CD;
+            color: #856404;
+        }
+
+        /* Multi-Step Form Container */
+        .form-container {
+            background: var(--white);
+            border-radius: var(--border-radius-lg);
+            padding: var(--spacing-xl);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            margin: 0 auto var(--spacing-xl);
+            max-width: 800px;
+            width: 100%;
+            display: none;
+        }
+
+        .form-container.active {
+            display: block;
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .form-title {
+            font-family: var(--font-headings);
+            font-size: var(--font-size-h2);
+            font-weight: var(--font-weight-bold);
+            color: var(--secondary-color);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .form-subtitle {
+            color: var(--text-color);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        /* Step Progress Indicator */
+        .step-progress {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .step-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            background: var(--border-color);
+            color: var(--text-color);
+            transition: all 0.3s ease;
+            z-index: 2;
+            position: relative;
+        }
+
+        .step-item.active .step-number {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .step-item.completed .step-number {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .step-item:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            width: 100px;
+            height: 2px;
+            background: var(--border-color);
+            transform: translateY(-50%);
+            z-index: 1;
+        }
+
+        .step-item.completed:not(:last-child)::after {
+            background: var(--success-color);
+        }
+
+        .step-progress .step-item {
+            margin-right: 100px;
+        }
+
+        .step-progress .step-item:last-child {
+            margin-right: 0;
+        }
+
+        /* Form Steps */
+        .form-step {
+            display: none;
+        }
+
+        .form-step.active {
+            display: block;
+        }
+
+        .form-section {
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .form-section-title {
+            font-family: var(--font-headings);
+            font-size: var(--font-size-h3);
+            font-weight: var(--font-weight-semibold);
+            color: var(--primary-color);
+            margin-bottom: var(--spacing-md);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group {
+            margin-bottom: var(--spacing-md);
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: var(--spacing-xs);
+            font-family: var(--font-primary);
+            font-weight: var(--font-weight-semibold);
+            color: var(--secondary-color);
+            font-size: 13px;
+        }
+
+        .form-input,
+        .form-textarea,
+        .form-select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-family: var(--font-primary);
+            font-size: var(--font-size-base);
+            color: var(--text-color);
+            background-color: var(--white);
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(255, 106, 60, 0.1);
+        }
+
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .form-row {
+            display: grid;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .form-row.two-cols {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        /* Form Navigation Buttons */
+        .form-navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: var(--spacing-xl);
+            padding-top: var(--spacing-lg);
+            border-top: 1px solid var(--border-color);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-family: var(--font-buttons);
+            font-size: var(--font-size-button);
+            font-weight: var(--font-weight-semibold);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background: #E55A31;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 106, 60, 0.3);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--light-gray);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* Success View */
+        .success-view {
+            text-align: center;
+            padding: var(--spacing-xl);
+            display: none;
+        }
+
+        .success-view.active {
+            display: block;
+        }
+
+        .success-icon {
+            font-size: 64px;
+            color: var(--success-color);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .success-title {
+            font-family: var(--font-headings);
+            font-size: var(--font-size-h2);
+            font-weight: var(--font-weight-bold);
+            color: var(--secondary-color);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .success-message {
+            color: var(--text-color);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .main-layout {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+                padding: var(--spacing-md);
+            }
+            
+            .sidebar-menu {
+                display: flex;
+                gap: var(--spacing-md);
+                overflow-x: auto;
+            }
+            
+            .main-content {
+                padding: var(--spacing-md);
+            }
+            
+            .form-row.two-cols {
+                grid-template-columns: 1fr;
+            }
+
+            .course-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .step-progress {
+                flex-wrap: wrap;
+                gap: var(--spacing-md);
+            }
+
+            .step-progress .step-item {
+                margin-right: var(--spacing-md);
+            }
+
+            .step-item:not(:last-child)::after {
+                display: none;
+            }
+        }
+
+        /* Hidden class */
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="#" class="logo">SUMMER SCHOOLS</a>
+            <ul class="nav-menu">
+                <li><a href="#" class="nav-item active" onclick="showDashboard()">Dashboard</a></li>
+                <li><a href="#" class="nav-item" onclick="showProvider()">Provider</a></li>
+                <li><a href="#" class="nav-item">Help</a></li>
+            </ul>
+            <div class="user-menu">
+                <div class="user-avatar" onclick="showProfile()" style="cursor: pointer;" title="Profile">HS</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Layout -->
+    <div class="main-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <ul class="sidebar-menu">
+                <li class="sidebar-item">
+                    <a href="#" class="sidebar-link active" onclick="showDashboard()">Dashboard</a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="#" class="sidebar-link" onclick="showProvider()">Provider</a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="#" class="sidebar-link">Help</a>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard View -->
+            <div id="dashboard-view">
+                <div class="dashboard-header">
+                    <h1 class="dashboard-title">Course Dashboard</h1>
+                    <button class="create-course-btn" onclick="startCourseCreation()">
+                        Create new course
+                    </button>
+                </div>
+
+                <div class="course-grid">
+                    <!-- Sample course card -->
+                    <div class="course-card">
+                        <div class="course-image">🍌</div>
+                        <div class="course-content">
+                            <h3 class="course-title">Banana Science Course</h3>
+                            <p class="course-description">
+                                A comprehensive course exploring banana cultivation, nutritional science, and sustainable agriculture practices.
+                            </p>
+                            <div class="course-meta">
+                                <span class="course-price">£2,500</span>
+                                <span class="course-duration">2 weeks</span>
+                            </div>
+                            <div class="course-dates">
+                                📅 15 Jul 2025 - 29 Jul 2025
+                            </div>
+                            <span class="status">In Review</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Multi-Step Course Creation Form -->
+            <div class="form-container" id="course-form">
+                <div class="form-header">
+                    <h2 class="form-title">COURSE PROVIDER APPLICATION</h2>
+                    <p class="form-subtitle">
+                        Please fill out this form to register your summer course. We will review your application and send you a notification when your course is published.
+                    </p>
+                </div>
+
+                <!-- Step Progress Indicator -->
+                <div class="step-progress">
+                    <div class="step-item active" data-step="1">
+                        <div class="step-number">1</div>
+                    </div>
+                    <div class="step-item" data-step="2">
+                        <div class="step-number">2</div>
+                    </div>
+                    <div class="step-item" data-step="3">
+                        <div class="step-number">3</div>
+                    </div>
+                    <div class="step-item" data-step="4">
+                        <div class="step-number">4</div>
+                    </div>
+                </div>
+
+                <form id="multiStepForm">
+                    <!-- Step 1: Basic Course Info -->
+                    <div class="form-step active" data-step="1">
+                        <div class="form-section">
+                            <h3 class="form-section-title">Basic Course Info</h3>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="course-name">Course name*</label>
+                                <input 
+                                    type="text" 
+                                    id="course-name" 
+                                    name="course-name" 
+                                    class="form-input" 
+                                    placeholder="i.e. Psychology course (13-15 yrs) at Oxford Summer Courses in Cambridge"
+                                    required
+                                >
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="course-details">Course details*</label>
+                                <textarea 
+                                    id="course-details" 
+                                    name="course-details" 
+                                    class="form-textarea" 
+                                    placeholder="A brief description of your course that explains what you will offer in the course and the course curriculum..."
+                                    required
+                                ></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="location">Location*</label>
+                                <select id="location" name="location" class="form-select" required>
+                                    <option value="">Select location</option>
+                                    <option value="cambridge">Cambridge</option>
+                                    <option value="oxford">Oxford</option>
+                                    <option value="london">London</option>
+                                    <option value="edinburgh">Edinburgh</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Course Logistics -->
+                    <div class="form-step" data-step="2">
+                        <div class="form-section">
+                            <h3 class="form-section-title">Course Logistics</h3>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="accommodation">Accommodation details*</label>
+                                <textarea 
+                                    id="accommodation" 
+                                    name="accommodation" 
+                                    class="form-textarea" 
+                                    placeholder="Describe the accommodation options, such as on-campus housing, shared rooms, or private facilities..."
+                                    required
+                                ></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="tuition">Tuition details*</label>
+                                <textarea 
+                                    id="tuition" 
+                                    name="tuition" 
+                                    class="form-textarea" 
+                                    placeholder="Input bullet points only, like below: • Learn the Oxford way with tutorial-style teaching in small groups..."
+                                    required
+                                ></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="extra-activities">Extracurricular Activities*</label>
+                                <textarea 
+                                    id="extra-activities" 
+                                    name="extra-activities" 
+                                    class="form-textarea" 
+                                    placeholder="Input bullet points only, like below: • Cultural activities and excursions • Sports and recreational programs..."
+                                    required
+                                ></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Pricing and Enrollment -->
+                    <div class="form-step" data-step="3">
+                        <div class="form-section">
+                            <h3 class="form-section-title">Pricing and Enrollment</h3>
+                            
+                            <div class="form-row two-cols">
+                                <div class="form-group">
+                                    <label class="form-label" for="course-fee">Course fee starting from (£)*</label>
+                                    <input 
+                                        type="number" 
+                                        id="course-fee" 
+                                        name="course-fee" 
+                                        class="form-input" 
+                                        placeholder="3000"
+                                        required
+                                    >
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="course-duration">Course duration*</label>
+                                    <select id="course-duration" name="course-duration" class="form-select" required>
+                                        <option value="">Select duration</option>
+                                        <option value="1-week">1 week</option>
+                                        <option value="2-weeks">2 weeks</option>
+                                        <option value="3-weeks">3 weeks</option>
+                                        <option value="4-weeks">4 weeks</option>
+                                        <option value="custom">Custom</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-row two-cols">
+                                <div class="form-group">
+                                    <label class="form-label" for="start-date">Course Start Date*</label>
+                                    <input 
+                                        type="date" 
+                                        id="start-date" 
+                                        name="start-date" 
+                                        class="form-input"
+                                        required
+                                    >
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="end-date">Course End Date*</label>
+                                    <input 
+                                        type="date" 
+                                        id="end-date" 
+                                        name="end-date" 
+                                        class="form-input"
+                                        required
+                                    >
+                                </div>
+                            </div>
+
+                            <div class="form-row two-cols">
+                                <div class="form-group">
+                                    <label class="form-label" for="min-age">Minimum Age*</label>
+                                    <input 
+                                        type="number" 
+                                        id="min-age" 
+                                        name="min-age" 
+                                        class="form-input" 
+                                        placeholder="13"
+                                        min="10" 
+                                        max="18"
+                                        required
+                                    >
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="max-age">Maximum Age*</label>
+                                    <input 
+                                        type="number" 
+                                        id="max-age" 
+                                        name="max-age" 
+                                        class="form-input" 
+                                        placeholder="17"
+                                        min="10" 
+                                        max="18"
+                                        required
+                                    >
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Contact Information -->
+                    <div class="form-step" data-step="4">
+                        <div class="form-section">
+                            <h3 class="form-section-title">Contact Information</h3>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="contact-email">Contact email*</label>
+                                <input 
+                                    type="email" 
+                                    id="contact-email" 
+                                    name="contact-email" 
+                                    class="form-input" 
+                                    placeholder="e.g. contact@summerschools.uk"
+                                    required
+                                >
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="provider-link">Provider link*</label>
+                                <input 
+                                    type="url" 
+                                    id="provider-link" 
+                                    name="provider-link" 
+                                    class="form-input" 
+                                    placeholder="e.g. https://www.summerschools.uk"
+                                    required
+                                >
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Form Navigation -->
+                <div class="form-navigation">
+                    <button type="button" class="btn btn-secondary" id="prevBtn" onclick="changeStep(-1)" disabled>
+                        ← Previous
+                    </button>
+                    <button type="button" class="btn btn-primary" id="nextBtn" onclick="changeStep(1)">
+                        Next →
+                    </button>
+                    <button type="button" class="btn btn-primary hidden" id="submitBtn" onclick="submitForm()">
+                        Submit Application
+                    </button>
+                </div>
+
+                <!-- Success View -->
+                <div class="success-view" id="success-view">
+                    <div class="success-icon">✅</div>
+                    <h2 class="success-title">Application Submitted Successfully!</h2>
+                    <p class="success-message">
+                        Thank you for submitting your course application. We will review your application and send you a notification when your course is published.
+                    </p>
+                    <button class="btn btn-primary" onclick="showDashboard()">
+                        Return to Dashboard
+                    </button>
+                </div>
+            </div>
+
+            <!-- Provider View -->
+            <div class="form-container" id="provider-view">
+                <div class="form-header">
+                    <h2 class="form-title">EDIT PROVIDER</h2>
+                    <p class="form-subtitle">
+                        Please fill out this form to update your provider information. This information will be displayed on your provider page.
+                    </p>
+                </div>
+
+                <form id="providerForm" action="https://app.summerschools.com/api/providers" method="post">
+                    <!-- School Information -->
+                    <div class="form-section">
+                        <h3 class="form-section-title">School Information</h3>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="School-name">School name*</label>
+                            <input 
+                                type="text" 
+                                id="School-name" 
+                                name="School-name" 
+                                class="form-input course-input-field course-name w-input" 
+                                placeholder="Enter school name"
+                                required
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="Short-bio">Short bio</label>
+                            <input 
+                                type="text" 
+                                id="Short-bio" 
+                                name="Short-bio" 
+                                class="form-input course-input-field course-name w-input" 
+                                placeholder="A one-liner about your school and your summer offerings"
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="Profile-Image">School logo</label>
+                            <input 
+                                type="file" 
+                                id="Profile-Image" 
+                                name="Profile-Image" 
+                                class="form-input w-file-upload-input" 
+                                accept="image/*"
+                            >
+                            <small style="color: var(--text-color); margin-top: 4px; display: block;">Upload photo</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="Details-school-bio">Details school bio (Provider details)</label>
+                            <input 
+                                type="text" 
+                                id="Details-school-bio" 
+                                name="Details-school-bio" 
+                                class="form-input course-input-field course-name w-input" 
+                                placeholder="Detailed description of your school that would appear on your provider page"
+                            >
+                        </div>
+
+                        <div class="form-row two-cols">
+                            <div class="form-group">
+                                <label class="form-label" for="Year-founded">Year founded</label>
+                                <input 
+                                    type="number" 
+                                    id="Year-founded" 
+                                    name="Year-founded" 
+                                    class="form-input course-input-field course-name w-input" 
+                                    placeholder="e.g. 1982"
+                                >
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="Accomodation-type">Type of Accomodation</label>
+                                <input 
+                                    type="text" 
+                                    id="Accomodation-type" 
+                                    name="Accomodation-type" 
+                                    class="form-input course-input-field course-name w-input" 
+                                    placeholder="e.g. University College Dormitory"
+                                >
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Program Details -->
+                    <div class="form-section">
+                        <h3 class="form-section-title">Program Details</h3>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="Course-Date">Course Dates</label>
+                            <input 
+                                type="text" 
+                                id="Course-Date" 
+                                name="Course-Date" 
+                                class="form-input course-input-field course-name w-input" 
+                                placeholder="e.g. 14 May - 23 July"
+                            >
+                        </div>
+
+                        <div class="form-row two-cols">
+                            <div class="form-group">
+                                <label class="form-label" for="Courses-duration">Course Duration</label>
+                                <input 
+                                    type="text" 
+                                    id="Courses-duration" 
+                                    name="Courses-duration" 
+                                    class="form-input course-input-field course-name w-input" 
+                                    placeholder="e.g. 2, 4 or 6 weeks"
+                                >
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="Age-Range">Age Range</label>
+                                <input 
+                                    type="text" 
+                                    id="Age-Range" 
+                                    name="Age-Range" 
+                                    class="form-input course-input-field course-name w-input" 
+                                    placeholder="e.g. 2, 4 or 6 weeks"
+                                >
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="Fees-from">Fees from (£)</label>
+                            <input 
+                                type="number" 
+                                id="Fees-from" 
+                                name="Fees-from" 
+                                class="form-input course-input-field course-name w-input" 
+                                placeholder="e.g. £3,000"
+                            >
+                        </div>
+                    </div>
+
+                    <!-- Media Uploads -->
+                    <div class="form-section">
+                        <h3 class="form-section-title">Media Uploads</h3>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="Gallary-Images">Upload photos gallery</label>
+                            <input 
+                                type="file" 
+                                id="Gallary-Images" 
+                                name="Gallary-Images" 
+                                class="form-input" 
+                                accept="image/*"
+                                multiple
+                            >
+                            <small style="color: var(--text-color); margin-top: 4px; display: block;">You can select multiple images</small>
+                        </div>
+                    </div>
+
+                    <!-- Hidden fields to match original form -->
+                    <input type="hidden" name="isUpdate" value="true">
+                    <input type="hidden" name="memberID" value="">
+
+                    <!-- Submit Buttons -->
+                    <div class="form-navigation" style="justify-content: center; gap: 16px;">
+                        <button type="submit" class="btn btn-primary main-button w-button">Update</button>
+                        <button type="button" class="btn btn-secondary" onclick="previewProvider()">Preview Provider</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Profile View -->
+            <div class="form-container" id="profile-view">
+                <div class="form-header">
+                    <h2 class="form-title">EDIT PROFILE</h2>
+                    <p class="form-subtitle">
+                        Update your personal profile information and account settings.
+                    </p>
+                </div>
+
+                <form id="profileForm">
+                    <!-- Personal Information -->
+                    <div class="form-section">
+                        <h3 class="form-section-title">Personal Information</h3>
+                        
+                        <div class="form-row two-cols">
+                            <div class="form-group">
+                                <label class="form-label" for="first-name">First Name*</label>
+                                <input 
+                                    type="text" 
+                                    id="first-name" 
+                                    name="first-name" 
+                                    class="form-input" 
+                                    placeholder="Enter your first name"
+                                    value="Hasan"
+                                    required
+                                >
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="last-name">Last Name*</label>
+                                <input 
+                                    type="text" 
+                                    id="last-name" 
+                                    name="last-name" 
+                                    class="form-input" 
+                                    placeholder="Enter your last name"
+                                    value="Shahriar"
+                                    required
+                                >
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="email">Email Address*</label>
+                            <input 
+                                type="email" 
+                                id="email" 
+                                name="email" 
+                                class="form-input" 
+                                placeholder="Enter your email address"
+                                value="shahriar.rhiday@gmail.com"
+                                required
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="phone">Phone Number</label>
+                            <input 
+                                type="tel" 
+                                id="phone" 
+                                name="phone" 
+                                class="form-input" 
+                                placeholder="Enter your phone number"
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="bio">Bio</label>
+                            <textarea 
+                                id="bio" 
+                                name="bio" 
+                                class="form-textarea" 
+                                placeholder="Tell us about yourself"
+                                rows="3"
+                            ></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="profile-picture">Profile Picture</label>
+                            <input 
+                                type="file" 
+                                id="profile-picture" 
+                                name="profile-picture" 
+                                class="form-input" 
+                                accept="image/*"
+                            >
+                        </div>
+                    </div>
+
+                    <!-- Account Settings -->
+                    <div class="form-section">
+                        <h3 class="form-section-title">Account Settings</h3>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="current-password">Current Password</label>
+                            <input 
+                                type="password" 
+                                id="current-password" 
+                                name="current-password" 
+                                class="form-input" 
+                                placeholder="Enter your current password"
+                            >
+                        </div>
+
+                        <div class="form-row two-cols">
+                            <div class="form-group">
+                                <label class="form-label" for="new-password">New Password</label>
+                                <input 
+                                    type="password" 
+                                    id="new-password" 
+                                    name="new-password" 
+                                    class="form-input" 
+                                    placeholder="Enter new password"
+                                >
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="confirm-password">Confirm New Password</label>
+                                <input 
+                                    type="password" 
+                                    id="confirm-password" 
+                                    name="confirm-password" 
+                                    class="form-input" 
+                                    placeholder="Confirm new password"
+                                >
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Notification Settings -->
+                    <div class="form-section">
+                        <h3 class="form-section-title">Notification Settings</h3>
+                        
+                        <div class="form-group" style="display: flex; align-items: center; gap: 12px;">
+                            <input 
+                                type="checkbox" 
+                                id="email-notifications" 
+                                name="email-notifications" 
+                                checked
+                            >
+                            <label class="form-label" for="email-notifications" style="margin-bottom: 0;">Email notifications for course updates</label>
+                        </div>
+
+                        <div class="form-group" style="display: flex; align-items: center; gap: 12px;">
+                            <input 
+                                type="checkbox" 
+                                id="marketing-emails" 
+                                name="marketing-emails"
+                            >
+                            <label class="form-label" for="marketing-emails" style="margin-bottom: 0;">Marketing emails and promotions</label>
+                        </div>
+                    </div>
+
+                    <!-- Submit Buttons -->
+                    <div class="form-navigation" style="justify-content: center; gap: 16px;">
+                        <button type="submit" class="btn btn-primary">Update Profile</button>
+                        <button type="button" class="btn btn-secondary" onclick="showDashboard()">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        const totalSteps = 4;
+
+        function showDashboard() {
+            // Hide all views
+            document.getElementById('dashboard-view').style.display = 'block';
+            document.getElementById('course-form').classList.remove('active');
+            document.getElementById('provider-view').classList.remove('active');
+            document.getElementById('profile-view').classList.remove('active');
+            
+            // Update navigation active states
+            updateNavActiveStates('dashboard');
+            
+            // Reset course form
+            currentStep = 1;
+            updateStepDisplay();
+            document.getElementById('multiStepForm').reset();
+            document.getElementById('success-view').classList.remove('active');
+            document.querySelector('.form-header').style.display = 'block';
+            document.querySelector('.step-progress').style.display = 'flex';
+            document.querySelector('#multiStepForm').style.display = 'block';
+            document.querySelector('.form-navigation').style.display = 'flex';
+        }
+
+        function showProvider() {
+            // Hide all views
+            document.getElementById('dashboard-view').style.display = 'none';
+            document.getElementById('course-form').classList.remove('active');
+            document.getElementById('provider-view').classList.add('active');
+            document.getElementById('profile-view').classList.remove('active');
+            
+            // Update navigation active states
+            updateNavActiveStates('provider');
+        }
+
+        function showProfile() {
+            // Hide all views
+            document.getElementById('dashboard-view').style.display = 'none';
+            document.getElementById('course-form').classList.remove('active');
+            document.getElementById('provider-view').classList.remove('active');
+            document.getElementById('profile-view').classList.add('active');
+            
+            // Update navigation active states
+            updateNavActiveStates('profile');
+        }
+
+        function updateNavActiveStates(activeView) {
+            // Update nav menu items
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            document.querySelectorAll('.sidebar-link').forEach(item => item.classList.remove('active'));
+            
+            if (activeView === 'dashboard') {
+                document.querySelector('.nav-item[onclick="showDashboard()"]').classList.add('active');
+                document.querySelector('.sidebar-link[onclick="showDashboard()"]').classList.add('active');
+            } else if (activeView === 'provider') {
+                document.querySelector('.nav-item[onclick="showProvider()"]').classList.add('active');
+                document.querySelector('.sidebar-link[onclick="showProvider()"]').classList.add('active');
+            }
+        }
+
+        function startCourseCreation() {
+            document.getElementById('dashboard-view').style.display = 'none';
+            document.getElementById('course-form').classList.add('active');
+            currentStep = 1;
+            updateStepDisplay();
+        }
+
+        function changeStep(direction) {
+            if (direction === 1 && !validateCurrentStep()) {
+                return;
+            }
+
+            currentStep += direction;
+            
+            if (currentStep < 1) currentStep = 1;
+            if (currentStep > totalSteps) currentStep = totalSteps;
+            
+            updateStepDisplay();
+        }
+
+        function updateStepDisplay() {
+            // Update step indicators
+            document.querySelectorAll('.step-item').forEach((item, index) => {
+                const stepNumber = index + 1;
+                item.classList.remove('active', 'completed');
+                
+                if (stepNumber < currentStep) {
+                    item.classList.add('completed');
+                } else if (stepNumber === currentStep) {
+                    item.classList.add('active');
+                }
+            });
+
+            // Update form steps
+            document.querySelectorAll('.form-step').forEach((step, index) => {
+                step.classList.remove('active');
+                if (index + 1 === currentStep) {
+                    step.classList.add('active');
+                }
+            });
+
+            // Update navigation buttons
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const submitBtn = document.getElementById('submitBtn');
+
+            prevBtn.disabled = currentStep === 1;
+            
+            if (currentStep === totalSteps) {
+                nextBtn.classList.add('hidden');
+                submitBtn.classList.remove('hidden');
+            } else {
+                nextBtn.classList.remove('hidden');
+                submitBtn.classList.add('hidden');
+            }
+        }
+
+        function validateCurrentStep() {
+            const currentStepElement = document.querySelector(`.form-step[data-step="${currentStep}"]`);
+            const requiredFields = currentStepElement.querySelectorAll('[required]');
+            
+            for (let field of requiredFields) {
+                if (!field.value.trim()) {
+                    field.focus();
+                    field.style.borderColor = '#dc3545';
+                    setTimeout(() => {
+                        field.style.borderColor = '';
+                    }, 2000);
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function submitForm() {
+            if (!validateCurrentStep()) {
+                return;
+            }
+
+            // Get form data
+            const formData = new FormData(document.getElementById('multiStepForm'));
+            const courseData = {};
+            
+            for (let [key, value] of formData.entries()) {
+                courseData[key] = value;
+            }
+            
+            console.log('Course Application Data:', courseData);
+            
+            // Show success view
+            document.querySelector('.form-header').style.display = 'none';
+            document.querySelector('.step-progress').style.display = 'none';
+            document.querySelector('#multiStepForm').style.display = 'none';
+            document.querySelector('.form-navigation').style.display = 'none';
+            document.getElementById('success-view').classList.add('active');
+        }
+
+        // Auto-fill end date when start date changes
+        document.getElementById('start-date').addEventListener('change', function() {
+            if (this.value) {
+                const start = new Date(this.value);
+                const end = new Date(start);
+                end.setDate(start.getDate() + 14);
+                document.getElementById('end-date').value = end.toISOString().split('T')[0];
+            }
+        });
+
+        // Age validation
+        document.getElementById('min-age').addEventListener('change', function() {
+            const maxAge = document.getElementById('max-age');
+            if (maxAge.value && parseInt(this.value) >= parseInt(maxAge.value)) {
+                maxAge.value = parseInt(this.value) + 1;
+            }
+        });
+
+        // Provider form submission
+        document.getElementById('providerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const providerData = {};
+            
+            for (let [key, value] of formData.entries()) {
+                providerData[key] = value;
+            }
+            
+            console.log('Provider Data:', providerData);
+            alert('Provider information updated successfully!');
+        });
+
+        // Profile form submission
+        document.getElementById('profileForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const profileData = {};
+            
+            for (let [key, value] of formData.entries()) {
+                profileData[key] = value;
+            }
+            
+            console.log('Profile Data:', profileData);
+            alert('Profile updated successfully!');
+        });
+
+        // Preview provider function
+        function previewProvider() {
+            alert('Provider preview functionality would open a new window showing how your provider page will look to students.');
+        }
+
+        // Password confirmation validation for profile
+        document.getElementById('confirm-password').addEventListener('input', function() {
+            const newPassword = document.getElementById('new-password').value;
+            const confirmPassword = this.value;
+            
+            if (confirmPassword && newPassword !== confirmPassword) {
+                this.style.borderColor = '#dc3545';
+                this.setCustomValidity('Passwords do not match');
+            } else {
+                this.style.borderColor = '';
+                this.setCustomValidity('');
+            }
+        });
+
+        // Initialize
+        updateStepDisplay();
+    </script>
+</body>
+</html>
