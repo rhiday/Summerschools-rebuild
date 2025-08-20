@@ -673,6 +673,103 @@
             display: none;
         }
 
+        /* Rich Text Editor Styling */
+        .rich-text-editor {
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            background: var(--white);
+            transition: all 0.3s ease;
+        }
+
+        .rich-text-editor:focus-within {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(255, 106, 60, 0.1);
+        }
+
+        .rich-text-toolbar {
+            display: flex;
+            gap: 4px;
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(248, 249, 250, 0.5);
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+            flex-wrap: wrap;
+        }
+
+        .rich-text-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border: 1px solid transparent;
+            background: transparent;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--text-color);
+            transition: all 0.2s ease;
+        }
+
+        .rich-text-btn:hover {
+            background: rgba(255, 106, 60, 0.1);
+            border-color: rgba(255, 106, 60, 0.2);
+        }
+
+        .rich-text-btn.active {
+            background: rgba(255, 106, 60, 0.15);
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .rich-text-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .rich-text-content {
+            min-height: 120px;
+            padding: 12px 16px;
+            font-family: var(--font-primary);
+            font-size: var(--font-size-base);
+            color: var(--text-color);
+            line-height: 1.5;
+            outline: none;
+            overflow-y: auto;
+        }
+
+        .rich-text-content:empty::before {
+            content: attr(data-placeholder);
+            color: #999;
+            font-style: italic;
+        }
+
+        .rich-text-content ul, .rich-text-content ol {
+            margin-left: 20px;
+            margin-bottom: 8px;
+        }
+
+        .rich-text-content li {
+            margin-bottom: 4px;
+        }
+
+        .rich-text-content p {
+            margin-bottom: 8px;
+        }
+
+        .rich-text-content strong {
+            font-weight: bold;
+        }
+
+        .rich-text-content em {
+            font-style: italic;
+        }
+
+        .rich-text-content u {
+            text-decoration: underline;
+        }
+
         .form-input:focus,
         .form-textarea:focus,
         .form-select:focus {
@@ -1014,35 +1111,92 @@
                             
                             <div class="form-group">
                                 <label class="form-label" for="accommodation">Accommodation details*</label>
-                                <textarea 
-                                    id="accommodation" 
-                                    name="accommodation" 
-                                    class="form-textarea" 
-                                    placeholder="Describe the accommodation options, such as on-campus housing, shared rooms, or private facilities..."
-                                    required
-                                ></textarea>
+                                <div class="rich-text-editor">
+                                    <div class="rich-text-toolbar">
+                                        <button type="button" class="rich-text-btn" data-command="bold" title="Bold">
+                                            <i data-lucide="bold"></i>
+                                        </button>
+                                        <button type="button" class="rich-text-btn" data-command="italic" title="Italic">
+                                            <i data-lucide="italic"></i>
+                                        </button>
+                                        <button type="button" class="rich-text-btn" data-command="underline" title="Underline">
+                                            <i data-lucide="underline"></i>
+                                        </button>
+                                        <button type="button" class="rich-text-btn" data-command="insertUnorderedList" title="Bullet List">
+                                            <i data-lucide="list"></i>
+                                        </button>
+                                        <button type="button" class="rich-text-btn" data-command="insertOrderedList" title="Numbered List">
+                                            <i data-lucide="list-ordered"></i>
+                                        </button>
+                                    </div>
+                                    <div 
+                                        class="rich-text-content" 
+                                        contenteditable="true" 
+                                        data-field="accommodation"
+                                        data-placeholder="Describe the accommodation options, such as on-campus housing, shared rooms, or private facilities..."
+                                    ></div>
+                                </div>
+                                <textarea id="accommodation" name="accommodation" style="display: none;" required></textarea>
                             </div>
 
                             <div class="form-group">
                                 <label class="form-label" for="tuition">Tuition details*</label>
-                                <textarea 
-                                    id="tuition" 
-                                    name="tuition" 
-                                    class="form-textarea" 
-                                    placeholder="Input bullet points only, like below: • Learn the Oxford way with tutorial-style teaching in small groups..."
-                                    required
-                                ></textarea>
+                                <div class="rich-text-editor">
+                                    <div class="rich-text-toolbar">
+                                        <button type="button" class="rich-text-btn" data-command="bold" title="Bold">
+                                            <i data-lucide="bold"></i>
+                                        </button>
+                                        <button type="button" class="rich-text-btn" data-command="italic" title="Italic">
+                                            <i data-lucide="italic"></i>
+                                        </button>
+                                        <button type="button" class="rich-text-btn" data-command="underline" title="Underline">
+                                            <i data-lucide="underline"></i>
+                                        </button>
+                                        <button type="button" class="rich-text-btn" data-command="insertUnorderedList" title="Bullet List">
+                                            <i data-lucide="list"></i>
+                                        </button>
+                                        <button type="button" class="rich-text-btn" data-command="insertOrderedList" title="Numbered List">
+                                            <i data-lucide="list-ordered"></i>
+                                        </button>
+                                    </div>
+                                    <div 
+                                        class="rich-text-content" 
+                                        contenteditable="true" 
+                                        data-field="tuition"
+                                        data-placeholder="Input bullet points only, like below: • Learn the Oxford way with tutorial-style teaching in small groups..."
+                                    ></div>
+                                </div>
+                                <textarea id="tuition" name="tuition" style="display: none;" required></textarea>
                             </div>
 
                             <div class="form-group">
                                 <label class="form-label" for="extra-activities">Extracurricular Activities*</label>
-                                <textarea 
-                                    id="extra-activities" 
-                                    name="extra-activities" 
-                                    class="form-textarea" 
-                                    placeholder="Input bullet points only, like below: • Cultural activities and excursions • Sports and recreational programs..."
-                                    required
-                                ></textarea>
+                                <div class="rich-text-editor">
+                                    <div class="rich-text-toolbar">
+                                        <button type="button" class="rich-text-btn" data-command="bold" title="Bold">
+                                            <i data-lucide="bold"></i>
+                                        </button>
+                                        <button type="button" class="rich-text-btn" data-command="italic" title="Italic">
+                                            <i data-lucide="italic"></i>
+                                        </button>
+                                        <button type="button" class="rich-text-btn" data-command="underline" title="Underline">
+                                            <i data-lucide="underline"></i>
+                                        </button>
+                                        <button type="button" class="rich-text-btn" data-command="insertUnorderedList" title="Bullet List">
+                                            <i data-lucide="list"></i>
+                                        </button>
+                                        <button type="button" class="rich-text-btn" data-command="insertOrderedList" title="Numbered List">
+                                            <i data-lucide="list-ordered"></i>
+                                        </button>
+                                    </div>
+                                    <div 
+                                        class="rich-text-content" 
+                                        contenteditable="true" 
+                                        data-field="extra-activities"
+                                        data-placeholder="Input bullet points only, like below: • Cultural activities and excursions • Sports and recreational programs..."
+                                    ></div>
+                                </div>
+                                <textarea id="extra-activities" name="extra-activities" style="display: none;" required></textarea>
                             </div>
                         </div>
                     </div>
@@ -2072,10 +2226,167 @@
             }
         }
 
+        // Rich Text Editor Functionality
+        function initializeRichTextEditors() {
+            const editors = document.querySelectorAll('.rich-text-editor');
+            
+            editors.forEach(editor => {
+                const toolbar = editor.querySelector('.rich-text-toolbar');
+                const content = editor.querySelector('.rich-text-content');
+                const hiddenTextarea = editor.parentElement.querySelector('textarea[style*="display: none"]');
+                const fieldName = content.dataset.field;
+                
+                // Handle toolbar button clicks
+                toolbar.addEventListener('click', (e) => {
+                    if (e.target.closest('.rich-text-btn')) {
+                        e.preventDefault();
+                        const button = e.target.closest('.rich-text-btn');
+                        const command = button.dataset.command;
+                        
+                        // Execute the formatting command
+                        document.execCommand(command, false, null);
+                        
+                        // Update button states
+                        updateToolbarStates(toolbar, content);
+                        
+                        // Focus back to content
+                        content.focus();
+                        
+                        // Update hidden textarea
+                        updateHiddenTextarea(content, hiddenTextarea);
+                    }
+                });
+                
+                // Handle content changes
+                content.addEventListener('input', () => {
+                    updateHiddenTextarea(content, hiddenTextarea);
+                });
+                
+                // Handle key events for formatting shortcuts
+                content.addEventListener('keydown', (e) => {
+                    // Ctrl+B for bold
+                    if (e.ctrlKey && e.key === 'b') {
+                        e.preventDefault();
+                        document.execCommand('bold');
+                        updateToolbarStates(toolbar, content);
+                    }
+                    // Ctrl+I for italic
+                    else if (e.ctrlKey && e.key === 'i') {
+                        e.preventDefault();
+                        document.execCommand('italic');
+                        updateToolbarStates(toolbar, content);
+                    }
+                    // Ctrl+U for underline
+                    else if (e.ctrlKey && e.key === 'u') {
+                        e.preventDefault();
+                        document.execCommand('underline');
+                        updateToolbarStates(toolbar, content);
+                    }
+                    
+                    // Update hidden textarea after any key input
+                    setTimeout(() => updateHiddenTextarea(content, hiddenTextarea), 0);
+                });
+                
+                // Handle selection changes to update toolbar states
+                content.addEventListener('mouseup', () => {
+                    updateToolbarStates(toolbar, content);
+                });
+                
+                content.addEventListener('keyup', () => {
+                    updateToolbarStates(toolbar, content);
+                });
+                
+                // Handle paste events
+                content.addEventListener('paste', (e) => {
+                    e.preventDefault();
+                    const text = e.clipboardData.getData('text/plain');
+                    document.execCommand('insertText', false, text);
+                    setTimeout(() => updateHiddenTextarea(content, hiddenTextarea), 0);
+                });
+                
+                // Set initial content from hidden textarea if it has content
+                if (hiddenTextarea.value) {
+                    content.innerHTML = hiddenTextarea.value;
+                }
+            });
+        }
+        
+        function updateToolbarStates(toolbar, content) {
+            const buttons = toolbar.querySelectorAll('.rich-text-btn');
+            
+            buttons.forEach(button => {
+                const command = button.dataset.command;
+                button.classList.remove('active');
+                
+                try {
+                    if (document.queryCommandState(command)) {
+                        button.classList.add('active');
+                    }
+                } catch (e) {
+                    // Some commands might not be supported
+                }
+            });
+        }
+        
+        function updateHiddenTextarea(content, hiddenTextarea) {
+            if (hiddenTextarea) {
+                hiddenTextarea.value = content.innerHTML;
+                
+                // Also trigger change event for form validation
+                hiddenTextarea.dispatchEvent(new Event('change'));
+            }
+        }
+        
+        // Function to get plain text content for validation
+        function getRichTextPlainText(fieldName) {
+            const content = document.querySelector(`[data-field="${fieldName}"]`);
+            return content ? content.textContent.trim() : '';
+        }
+        
+        // Override validation to work with rich text editors
+        const originalValidateCurrentStep = window.validateCurrentStep;
+        window.validateCurrentStep = function() {
+            const currentStepElement = document.querySelector(`.form-step[data-step="${currentStep}"]`);
+            const requiredFields = currentStepElement.querySelectorAll('[required]');
+            
+            for (let field of requiredFields) {
+                let value = '';
+                
+                // Check if this is a hidden textarea with rich text editor
+                if (field.style.display === 'none' && field.previousElementSibling?.classList.contains('rich-text-editor')) {
+                    const richTextContent = field.previousElementSibling.querySelector('.rich-text-content');
+                    value = richTextContent.textContent.trim();
+                } else {
+                    value = field.value.trim();
+                }
+                
+                if (!value) {
+                    // Focus the rich text editor if it's a hidden textarea
+                    if (field.style.display === 'none' && field.previousElementSibling?.classList.contains('rich-text-editor')) {
+                        const richTextContent = field.previousElementSibling.querySelector('.rich-text-content');
+                        richTextContent.focus();
+                        field.previousElementSibling.style.borderColor = '#dc3545';
+                        setTimeout(() => {
+                            field.previousElementSibling.style.borderColor = '';
+                        }, 2000);
+                    } else {
+                        field.focus();
+                        field.style.borderColor = '#dc3545';
+                        setTimeout(() => {
+                            field.style.borderColor = '';
+                        }, 2000);
+                    }
+                    return false;
+                }
+            }
+            return true;
+        };
+
         // Initialize icons after page load
         window.addEventListener('load', () => {
             initializeIcons();
             initializeFileUploads();
+            initializeRichTextEditors();
         });
     </script>
 </body>
