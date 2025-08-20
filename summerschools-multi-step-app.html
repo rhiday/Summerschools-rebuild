@@ -21,10 +21,12 @@
             
             /* Extracted Font Variables from Original SummerSchools - Using Local Fonts */
             --font-primary: "Open Sans", "Open Sans Local", sans-serif;
+            --font-paragraphs: "Gilroy", Arial, sans-serif;
             --font-headings-h1: "Taymilkbar", Arial, sans-serif;
             --font-headings-h2: "Domine", sans-serif;
             --font-headings-general: "Gilroy", Arial, sans-serif;
             --font-buttons: "Open Sans", "Open Sans Local", sans-serif;
+            --font-navigation: "Open Sans", "Open Sans Local", sans-serif;
             --font-family: "Open Sans", "Open Sans Local", sans-serif;
             
             --font-size-base: 14px;
@@ -63,6 +65,15 @@
             background-color: var(--light-gray);
             line-height: var(--line-height-base);
             font-weight: var(--font-weight-normal);
+        }
+
+        /* Paragraphs use Gilroy as per original dashboard */
+        p, .text, .description {
+            font-family: var(--font-paragraphs);
+            font-size: 16px;
+            font-weight: 400;
+            color: rgb(73, 73, 73);
+            line-height: 1.5;
         }
 
         /* Navigation - Exact SummerSchools Match */
@@ -108,6 +119,7 @@
         }
 
         .nav-item {
+            font-family: var(--font-navigation);
             color: var(--text-color);
             text-decoration: none;
             font-weight: 500;
@@ -169,6 +181,7 @@
             display: flex;
             align-items: center;
             padding: 12px 16px;
+            font-family: var(--font-navigation);
             color: var(--text-color);
             text-decoration: none;
             border-radius: var(--border-radius);
@@ -277,7 +290,10 @@
         }
 
         .course-description {
-            color: var(--text-color);
+            font-family: var(--font-paragraphs);
+            font-size: 16px;
+            font-weight: 400;
+            color: rgb(73, 73, 73);
             margin-bottom: var(--spacing-md);
             line-height: 1.5;
         }
@@ -347,7 +363,9 @@
         }
 
         .form-subtitle {
-            color: var(--text-color);
+            font-family: var(--font-paragraphs);
+            font-size: 16px;
+            color: rgb(73, 73, 73);
             margin-bottom: var(--spacing-lg);
         }
 
@@ -567,7 +585,9 @@
         }
 
         .success-message {
-            color: var(--text-color);
+            font-family: var(--font-paragraphs);
+            font-size: 18px;
+            color: rgb(73, 73, 73);
             margin-bottom: var(--spacing-xl);
         }
 
