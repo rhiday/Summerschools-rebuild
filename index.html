@@ -6,6 +6,8 @@
     <title>Course Creator - SummerSchools Style</title>
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&family=Domine:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="fonts.css">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <style>
         /* SummerSchools.com Design Variables */
         :root {
@@ -362,9 +364,21 @@
             font-size: 16px;
         }
 
+        .course-action-btn svg {
+            width: 18px;
+            height: 18px;
+            stroke-width: 2;
+            color: var(--text-color);
+            transition: color 0.3s ease;
+        }
+
         .course-action-btn:hover {
             background: var(--light-gray);
             border-color: var(--primary-color);
+        }
+
+        .course-action-btn:hover svg {
+            color: var(--primary-color);
         }
 
         .course-action-btn.primary {
@@ -373,8 +387,27 @@
             border-color: var(--primary-color);
         }
 
+        .course-action-btn.primary svg {
+            color: var(--white);
+        }
+
         .course-action-btn.primary:hover {
             background: #E55A31;
+        }
+
+        .course-action-btn.danger {
+            background: #dc3545;
+            color: var(--white);
+            border-color: #dc3545;
+        }
+
+        .course-action-btn.danger svg {
+            color: var(--white);
+        }
+
+        .course-action-btn.danger:hover {
+            background: #c82333;
+            border-color: #bd2130;
         }
 
         /* Multi-Step Form Container */
@@ -768,13 +801,13 @@
                             <span class="status">In Review</span>
                             <div class="course-actions">
                                 <button class="course-action-btn" onclick="editCourse(1)" title="Edit Course">
-                                    ✏️
+                                    <i data-lucide="edit"></i>
                                 </button>
                                 <button class="course-action-btn" onclick="duplicateCourse(1)" title="Duplicate Course">
-                                    📋
+                                    <i data-lucide="copy"></i>
                                 </button>
                                 <button class="course-action-btn" onclick="archiveCourse(1)" title="Archive Course">
-                                    📦
+                                    <i data-lucide="archive"></i>
                                 </button>
                             </div>
                         </div>
@@ -1700,6 +1733,9 @@
                 const courseCard = createCourseCard(course, false);
                 container.appendChild(courseCard);
             });
+            
+            // Reinitialize icons for dynamically created content
+            initializeIcons();
         }
         
         function renderArchivedCourses() {
@@ -1718,6 +1754,9 @@
                 const courseCard = createCourseCard(course, true);
                 container.appendChild(courseCard);
             });
+            
+            // Reinitialize icons for dynamically created content
+            initializeIcons();
         }
         
         function createCourseCard(course, isArchived) {
@@ -1739,20 +1778,20 @@
                     <div class="course-actions">
                         ${isArchived ? `
                             <button class="course-action-btn" onclick="restoreCourse(${course.id})" title="Restore Course">
-                                ↩️
+                                <i data-lucide="undo"></i>
                             </button>
-                            <button class="course-action-btn" onclick="deleteCourse(${course.id})" title="Delete Permanently" style="background: #dc3545; color: white;">
-                                🗑️
+                            <button class="course-action-btn danger" onclick="deleteCourse(${course.id})" title="Delete Permanently">
+                                <i data-lucide="trash-2"></i>
                             </button>
                         ` : `
                             <button class="course-action-btn" onclick="editCourse(${course.id})" title="Edit Course">
-                                ✏️
+                                <i data-lucide="edit"></i>
                             </button>
                             <button class="course-action-btn" onclick="duplicateCourse(${course.id})" title="Duplicate Course">
-                                📋
+                                <i data-lucide="copy"></i>
                             </button>
                             <button class="course-action-btn" onclick="archiveCourse(${course.id})" title="Archive Course">
-                                📦
+                                <i data-lucide="archive"></i>
                             </button>
                         `}
                     </div>
@@ -1762,10 +1801,20 @@
             return card;
         }
 
+        // Initialize Lucide icons
+        function initializeIcons() {
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        }
+
         // Initialize
         updateStepDisplay();
         renderActiveCourses();
         renderArchivedCourses();
+        
+        // Initialize icons after page load
+        window.addEventListener('load', initializeIcons);
     </script>
 </body>
 </html>
