@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# System files
+.DS_Store
+.vscode/
+
+# Results and analysis directories (temporary outputs)
+*-results/
+analysis-results/
+design-extraction/
+font-analysis/
+dashboard-check/
+provider-design-check/
+summer-schools-dashboard/
+
+# Log files
+*.log
+
+# Environment files
+.env
+.env.local
+
+# Cache directories
+.cache/
+dist/
+
+# Temporary files
+*.tmp
+*.temp
