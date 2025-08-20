@@ -1669,7 +1669,7 @@
             return true;
         }
 
-        function submitForm() {
+        async function submitForm() {
             if (!validateCurrentStep()) {
                 return;
             }
@@ -1682,14 +1682,82 @@
                 courseData[key] = value;
             }
             
-            console.log('Course Application Data:', courseData);
+            // Prepare data for Webflow CMS matching the collection fields
+            const webflowData = {
+                fields: {
+                    name: courseData['course-name'],
+                    slug: courseData['course-name'].toLowerCase()
+                        .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+                        .replace(/\s+/g, '-')          // Replace spaces with hyphens
+                        .replace(/-+/g, '-')           // Replace multiple hyphens with single
+                        .trim(),
+                    // Plain text fields from the form
+                    age: `${courseData['min-age']}-${courseData['max-age']}`,
+                    fees: parseInt(courseData['course-fee']) || 0,
+                    duration: courseData['course-duration'].replace('-', ' '),
+                    dates: `${new Date(courseData['start-date']).toLocaleDateString()} - ${new Date(courseData['end-date']).toLocaleDateString()}`,
+                    location: courseData['location'],
+                    category: courseData['location'], // Using location as category for now
+                    provider: courseData['contact-email'] || courseData['provider-link'] || '',
+                    // Additional course details
+                    'course-details': courseData['course-details'],
+                    'accommodation': courseData['accommodation'],
+                    'tuition': courseData['tuition'],
+                    'extra-activities': courseData['extra-activities']
+                },
+                '_archived': false,
+                '_draft': true  // Set initial status as Draft in Webflow
+            };
+
+            // Webflow API configuration
+            const WEBFLOW_API_TOKEN = 'f7bc0de3a3b71c0f55c7bcec54744de991fa9a26882e1515ca458e187aadae5d';
+            const COLLECTION_ID = '672bbb0fffd67079e532dfd9';
             
-            // Show success view
-            document.querySelector('.form-header').style.display = 'none';
-            document.querySelector('.step-progress').style.display = 'none';
-            document.querySelector('#multiStepForm').style.display = 'none';
-            document.querySelector('.form-navigation').style.display = 'none';
-            document.getElementById('success-view').classList.add('active');
+            // Note: Direct Webflow API calls from browser may face CORS issues
+            // For production, you should use a server-side proxy or Webflow's form submission
+            // Alternative: Use a service like Make/Zapier or a serverless function
+            const WEBFLOW_API_URL = `https://api.webflow.com/collections/${COLLECTION_ID}/items`;
+
+            try {
+                // Show loading state
+                const submitBtn = document.getElementById('submitBtn');
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Submitting...';
+
+                // Submit to Webflow CMS
+                const response = await fetch(WEBFLOW_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${WEBFLOW_API_TOKEN}`,
+                        'Content-Type': 'application/json',
+                        'accept-version': '1.0.0'
+                    },
+                    body: JSON.stringify(webflowData)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Webflow API error: ${response.status}`);
+                }
+
+                const result = await response.json();
+                console.log('Course submitted to Webflow:', result);
+                
+                // Show success view
+                document.querySelector('.form-header').style.display = 'none';
+                document.querySelector('.step-progress').style.display = 'none';
+                document.querySelector('#multiStepForm').style.display = 'none';
+                document.querySelector('.form-navigation').style.display = 'none';
+                document.getElementById('success-view').classList.add('active');
+                
+            } catch (error) {
+                console.error('Error submitting to Webflow:', error);
+                alert('There was an error submitting your course. Please try again or contact support.');
+                
+                // Reset button state
+                const submitBtn = document.getElementById('submitBtn');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Application';
+            }
         }
 
         // Auto-fill end date when start date changes
