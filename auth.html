@@ -183,19 +183,21 @@
             <p>Sign in to access your course dashboard</p>
         </div>
         
-        <!-- MEMBERSTACK LOGIN FORM - CORRECT ATTRIBUTES -->
-        <form data-ms-form="login" data-ms-redirect="/index.html">
+        <!-- SIMPLE MANUAL MEMBERSTACK LOGIN -->
+        <div id="login-status" style="display: none; padding: 10px; margin: 10px 0; border-radius: 5px;"></div>
+        
+        <form id="loginForm">
             <div class="form-group">
                 <label for="email">Email Address</label>
-                <input type="email" data-ms-member="email" name="email" id="email" required value="shahriar.rhiday@gmail.com">
+                <input type="email" name="email" id="email" required value="shahriar.rhiday@gmail.com">
             </div>
             
             <div class="form-group">
                 <label for="password">Password</label>
-                <input type="password" data-ms-member="password" name="password" id="password" required>
+                <input type="password" name="password" id="password" required>
             </div>
             
-            <button type="submit" class="btn btn-primary" data-ms-button="login">Sign In</button>
+            <button type="submit" class="btn btn-primary" id="signInBtn">Sign In</button>
         </form>
         
         <div class="auth-switch">
@@ -205,69 +207,133 @@
     </div>
 
     <script>
-        // ENHANCED MEMBERSTACK INTEGRATION
-        window.addEventListener('load', function() {
-            console.log('Page loaded, checking Memberstack...');
+        // DIRECT MEMBERSTACK API APPROACH - SIMPLE
+        let isSigningIn = false;
+
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('login-status');
+            statusDiv.style.display = 'block';
+            statusDiv.textContent = message;
             
-            // Multiple loading checks
-            function checkMemberstack() {
+            if (type === 'error') {
+                statusDiv.style.backgroundColor = '#f8d7da';
+                statusDiv.style.color = '#721c24';
+                statusDiv.style.border = '1px solid #f5c6cb';
+            } else if (type === 'success') {
+                statusDiv.style.backgroundColor = '#d4edda';
+                statusDiv.style.color = '#155724';
+                statusDiv.style.border = '1px solid #c3e6cb';
+            } else {
+                statusDiv.style.backgroundColor = '#d1ecf1';
+                statusDiv.style.color = '#0c5460';
+                statusDiv.style.border = '1px solid #bee5eb';
+            }
+        }
+
+        function hideStatus() {
+            document.getElementById('login-status').style.display = 'none';
+        }
+
+        // Wait for Memberstack and check if already logged in
+        window.addEventListener('load', function() {
+            console.log('🔄 Checking Memberstack...');
+            
+            function initMemberstack() {
                 if (window.MemberStack && window.MemberStack.onReady) {
-                    console.log('✅ Memberstack found');
+                    console.log('✅ MemberStack found');
                     
                     window.MemberStack.onReady.then(() => {
-                        console.log('🎉 Memberstack ready');
+                        console.log('✅ Memberstack ready');
                         
-                        // Check if user is already logged in
                         if (window.$memberstackDom) {
+                            // Check if already logged in
                             window.$memberstackDom.getCurrentMember().then(member => {
                                 if (member && member.data) {
-                                    console.log('User already logged in, redirecting...');
-                                    window.location.href = '/index.html';
+                                    console.log('✅ Already logged in, redirecting...');
+                                    showStatus('Already signed in. Redirecting...', 'success');
+                                    setTimeout(() => {
+                                        window.location.href = '/index.html';
+                                    }, 1000);
                                 } else {
                                     console.log('Ready for login');
+                                    hideStatus();
                                 }
-                            }).catch(err => {
-                                console.log('No current member');
+                            }).catch(() => {
+                                console.log('No current member - ready for login');
+                                hideStatus();
                             });
                         }
-                        
                     }).catch(error => {
-                        console.error('Memberstack onReady error:', error);
-                    });
-                    
-                } else if (window.$memberstackDom) {
-                    console.log('✅ $memberstackDom found directly');
-                    // Check if already logged in
-                    window.$memberstackDom.getCurrentMember().then(member => {
-                        if (member && member.data) {
-                            console.log('User already logged in, redirecting...');
-                            window.location.href = '/index.html';
-                        }
-                    }).catch(err => {
-                        console.log('Ready for login');
+                        console.error('❌ Memberstack onReady error:', error);
+                        showStatus('Authentication system error. Please refresh.', 'error');
                     });
                 } else {
-                    console.log('Memberstack not yet loaded, retrying...');
-                    setTimeout(checkMemberstack, 500);
+                    console.log('⏳ Memberstack not ready, retrying...');
+                    setTimeout(initMemberstack, 500);
                 }
             }
             
-            // Start checking
-            checkMemberstack();
+            initMemberstack();
         });
 
-        // Manual form handling as backup
+        // Handle form submission manually
         document.addEventListener('DOMContentLoaded', function() {
-            const form = document.querySelector('form[data-ms-form="login"]');
-            if (form) {
-                form.addEventListener('submit', function(e) {
-                    console.log('Form submission detected');
-                    // Let Memberstack handle it, but add some debugging
-                    setTimeout(() => {
-                        console.log('Form submitted, checking for errors...');
-                    }, 100);
-                });
-            }
+            const form = document.getElementById('loginForm');
+            const signInBtn = document.getElementById('signInBtn');
+            
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault(); // PREVENT DEFAULT FORM SUBMISSION
+                
+                if (isSigningIn) return;
+                isSigningIn = true;
+                
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                
+                console.log('🔐 Attempting login for:', email);
+                
+                // Update button
+                signInBtn.disabled = true;
+                signInBtn.textContent = 'Signing In...';
+                showStatus('Signing in...', 'info');
+                
+                try {
+                    // Wait for Memberstack to be ready
+                    if (!window.$memberstackDom) {
+                        if (window.MemberStack && window.MemberStack.onReady) {
+                            await window.MemberStack.onReady;
+                        } else {
+                            throw new Error('Memberstack not available');
+                        }
+                    }
+                    
+                    // Attempt sign in
+                    const result = await window.$memberstackDom.signIn({
+                        email: email,
+                        password: password
+                    });
+                    
+                    console.log('✅ Sign in result:', result);
+                    
+                    if (result && result.data) {
+                        showStatus('Sign in successful! Redirecting...', 'success');
+                        setTimeout(() => {
+                            window.location.href = '/index.html';
+                        }, 1500);
+                    } else {
+                        throw new Error('Invalid login response');
+                    }
+                    
+                } catch (error) {
+                    console.error('❌ Sign in error:', error);
+                    showStatus(error.message || 'Sign in failed. Please check your credentials.', 'error');
+                } finally {
+                    // Reset button
+                    signInBtn.disabled = false;
+                    signInBtn.textContent = 'Sign In';
+                    isSigningIn = false;
+                }
+            });
         });
     </script>
 </body>
