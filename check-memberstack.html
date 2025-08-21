@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memberstack Users Check</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+        .status {
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            background: #f0f0f0;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .user-card {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .user-card h3 {
+            margin: 0 0 10px 0;
+            color: #495057;
+        }
+        .user-field {
+            display: flex;
+            margin: 5px 0;
+        }
+        .user-field strong {
+            min-width: 120px;
+            color: #6c757d;
+        }
+        .user-field span {
+            color: #212529;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #5a67d8;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Memberstack Users Check</h1>
+        
+        <div id="status" class="status info">
+            Initializing...
+        </div>
+
+        <div>
+            <button onclick="fetchFromAPI()" id="fetchBtn">Fetch Users from API</button>
+            <button onclick="checkCurrentUser()" id="checkBtn">Check Current User</button>
+            <button onclick="testConnection()" id="testBtn">Test Memberstack Connection</button>
+        </div>
+
+        <div id="loading" class="loading" style="display: none;">
+            <div class="spinner"></div>
+            <p>Fetching users...</p>
+        </div>
+
+        <div id="results"></div>
+    </div>
+
+    <!-- Memberstack DOM Package -->
+    <script src="https://static.memberstack.com/scripts/v1/memberstack-dom.js" data-memberstack-app="pk_4f1166cfc3dc4380712e"></script>
+    
+    <script>
+        // Initialize Memberstack
+        let memberstack = null;
+        
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                if (window.MemberStack) {
+                    memberstack = window.MemberStack.init({
+                        publicKey: 'pk_4f1166cfc3dc4380712e'
+                    });
+                    updateStatus('Memberstack initialized successfully', 'success');
+                } else {
+                    updateStatus('Memberstack not loaded', 'error');
+                }
+            }, 1000);
+        });
+
+        function updateStatus(message, type = 'info') {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+            document.getElementById('fetchBtn').disabled = show;
+            document.getElementById('checkBtn').disabled = show;
+            document.getElementById('testBtn').disabled = show;
+        }
+
+        async function fetchFromAPI() {
+            showLoading(true);
+            updateStatus('Fetching users from API...', 'info');
+            
+            try {
+                const response = await fetch('https://summerschools-rebuild-potpqo5qt-rhidzs-projects.vercel.app/api/memberstack-users');
+                const result = await response.json();
+                
+                if (result.success) {
+                    updateStatus(`Found ${result.totalMembers} users`, 'success');
+                    displayUsers(result.members);
+                } else {
+                    updateStatus(result.message, 'error');
+                    
+                    if (result.help) {
+                        document.getElementById('results').innerHTML = `
+                            <div class="status error">
+                                <h3>⚠️ Configuration Required</h3>
+                                <p>${result.message}</p>
+                                <p><strong>To fix this:</strong></p>
+                                <ol>
+                                    <li>Go to your Memberstack Dashboard</li>
+                                    <li>Navigate to Settings > API Keys</li>
+                                    <li>Copy your Secret Key (starts with sk_)</li>
+                                    <li>Add it to Vercel Environment Variables:
+                                        <pre>MEMBERSTACK_SECRET_KEY = sk_your_secret_key</pre>
+                                    </li>
+                                    <li>Redeploy the application</li>
+                                </ol>
+                            </div>
+                        `;
+                    }
+                }
+            } catch (error) {
+                updateStatus('Failed to fetch users: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function checkCurrentUser() {
+            if (!memberstack) {
+                updateStatus('Memberstack not initialized', 'error');
+                return;
+            }
+            
+            showLoading(true);
+            updateStatus('Checking current user...', 'info');
+            
+            try {
+                const member = await memberstack.getCurrentMember();
+                
+                if (member) {
+                    updateStatus('Current user found', 'success');
+                    displayUsers([{
+                        id: member.id,
+                        email: member.email,
+                        customFields: member.customFields || {},
+                        createdAt: member.createdAt,
+                        loginHint: 'This is the currently logged in user'
+                    }]);
+                } else {
+                    updateStatus('No user currently logged in', 'info');
+                    document.getElementById('results').innerHTML = `
+                        <div class="status info">
+                            <p>No user is currently logged in.</p>
+                            <p><a href="/auth.html">Go to login page</a></p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                updateStatus('Error checking current user: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function testConnection() {
+            showLoading(true);
+            updateStatus('Testing Memberstack connection...', 'info');
+            
+            const tests = [];
+            
+            // Test 1: Check if Memberstack is loaded
+            tests.push({
+                name: 'Memberstack Library',
+                passed: !!window.MemberStack,
+                message: window.MemberStack ? 'Loaded successfully' : 'Not loaded'
+            });
+            
+            // Test 2: Check if initialized
+            tests.push({
+                name: 'Memberstack Initialized',
+                passed: !!memberstack,
+                message: memberstack ? 'Initialized with public key' : 'Not initialized'
+            });
+            
+            // Test 3: Check API endpoint
+            try {
+                const response = await fetch('/api/memberstack-users');
+                const result = await response.json();
+                tests.push({
+                    name: 'API Endpoint',
+                    passed: response.ok,
+                    message: response.ok ? 'Endpoint accessible' : `Error: ${result.message}`
+                });
+            } catch (error) {
+                tests.push({
+                    name: 'API Endpoint',
+                    passed: false,
+                    message: 'Failed to reach endpoint'
+                });
+            }
+            
+            // Display test results
+            const allPassed = tests.every(t => t.passed);
+            updateStatus(allPassed ? 'All tests passed!' : 'Some tests failed', allPassed ? 'success' : 'error');
+            
+            let html = '<h2>Connection Test Results</h2>';
+            tests.forEach(test => {
+                html += `
+                    <div class="user-field">
+                        <strong>${test.passed ? '✅' : '❌'} ${test.name}:</strong>
+                        <span>${test.message}</span>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('results').innerHTML = html;
+            showLoading(false);
+        }
+
+        function displayUsers(users) {
+            let html = '<h2>Memberstack Users</h2>';
+            
+            if (!users || users.length === 0) {
+                html += '<p>No users found</p>';
+            } else {
+                users.forEach((user, index) => {
+                    html += `
+                        <div class="user-card">
+                            <h3>User #${index + 1}</h3>
+                            <div class="user-field">
+                                <strong>Email:</strong>
+                                <span>${user.email}</span>
+                            </div>
+                            <div class="user-field">
+                                <strong>Member ID:</strong>
+                                <span>${user.id}</span>
+                            </div>
+                            <div class="user-field">
+                                <strong>Created:</strong>
+                                <span>${user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}</span>
+                            </div>
+                            ${user.customFields && Object.keys(user.customFields).length > 0 ? `
+                                <div class="user-field">
+                                    <strong>Custom Fields:</strong>
+                                    <span>${JSON.stringify(user.customFields)}</span>
+                                </div>
+                            ` : ''}
+                            <div class="user-field" style="color: #28a745; margin-top: 10px;">
+                                <strong>💡 Hint:</strong>
+                                <span>${user.loginHint}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            
+            document.getElementById('results').innerHTML = html;
+        }
+
+        // Auto-run test on load
+        setTimeout(() => testConnection(), 1500);
+    </script>
+</body>
+</html>
