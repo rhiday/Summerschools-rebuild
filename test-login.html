@@ -109,8 +109,8 @@
         <div id="console"></div>
     </div>
 
-    <!-- Memberstack 2.0 -->
-    <script data-memberstack-id="pk_4f1166cfc3dc4380712e" src="https://static.memberstack.com/scripts/v1/memberstack.js" async></script>
+    <!-- Memberstack DOM Package -->
+    <script src="https://static.memberstack.com/scripts/v1/memberstack-dom.js" data-memberstack-app="pk_4f1166cfc3dc4380712e"></script>
     
     <script>
         let memberstack = null;
@@ -142,38 +142,43 @@
         }
         
         async function testInitialization() {
-            log('Starting Memberstack initialization test...', 'info');
+            log('Starting Memberstack DOM package test...', 'info');
             
             try {
-                // Check if Memberstack 2.0 is loaded (auto-initialized)
-                if (typeof window.memberstack !== 'undefined') {
-                    log('✅ Memberstack 2.0 is auto-initialized', 'success');
-                    memberstack = window.memberstack;
-                    log('Memberstack instance ready', 'success');
+                // Check if Memberstack DOM package is loaded
+                if (typeof window.$memberstackDom !== 'undefined') {
+                    log('✅ Memberstack DOM package is ready', 'success');
+                    memberstack = window.$memberstackDom;
+                    log('DOM package instance ready', 'success');
                     return;
                 }
                 
-                // Check if old MemberStack is available
+                // Check if MemberStack global is available
                 if (typeof window.MemberStack !== 'undefined') {
-                    log('Found MemberStack 1.0, initializing...', 'info');
-                    memberstack = window.MemberStack.init({
-                        publicKey: 'pk_4f1166cfc3dc4380712e'
-                    });
-                    log('✅ Memberstack 1.0 initialized', 'success');
-                    window.$memberstackDom = memberstack;
-                    return;
+                    log('Found MemberStack global, checking onReady...', 'info');
+                    
+                    if (window.MemberStack.onReady) {
+                        log('Using onReady promise...', 'info');
+                        await window.MemberStack.onReady;
+                        
+                        if (window.$memberstackDom) {
+                            memberstack = window.$memberstackDom;
+                            log('✅ DOM package ready after onReady', 'success');
+                            return;
+                        }
+                    }
                 }
                 
                 // Wait and retry
-                log('Memberstack not found, waiting 2 seconds...', 'warning');
+                log('DOM package not found, waiting 2 seconds...', 'warning');
                 await new Promise(resolve => setTimeout(resolve, 2000));
                 
-                if (typeof window.memberstack !== 'undefined') {
-                    memberstack = window.memberstack;
-                    log('✅ Memberstack 2.0 found after delay', 'success');
+                if (typeof window.$memberstackDom !== 'undefined') {
+                    memberstack = window.$memberstackDom;
+                    log('✅ DOM package found after delay', 'success');
                 } else {
-                    log('❌ Memberstack not available', 'error');
-                    log('Check that the script is loaded properly', 'error');
+                    log('❌ Memberstack DOM package not available', 'error');
+                    log('Check that the script has data-memberstack-app attribute', 'error');
                 }
                 
             } catch (error) {
@@ -198,8 +203,8 @@
                 log(`Attempting login with: ${testEmail}`, 'info');
                 log('Calling memberstack.signIn()...', 'info');
                 
-                // Use Memberstack 2.0 API
-                const response = await window.memberstack.loginMemberEmailPassword({
+                // Use Memberstack DOM package API
+                const response = await memberstack.signIn({
                     email: testEmail,
                     password: testPassword
                 });
@@ -246,7 +251,7 @@
             
             try {
                 log('Calling memberstack.getCurrentMember()...', 'info');
-                const member = await window.memberstack.getCurrentMember();
+                const member = await memberstack.getCurrentMember();
                 
                 if (member) {
                     log('✅ Active session found', 'success');
@@ -277,8 +282,8 @@
             }
             
             try {
-                log('Calling memberstack.logout()...', 'info');
-                await window.memberstack.logout();
+                log('Calling memberstack.signOut()...', 'info');
+                await memberstack.signOut();
                 
                 log('✅ Signed out successfully', 'success');
                 

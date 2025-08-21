@@ -18,39 +18,24 @@ class AuthService {
         try {
             this.initializationAttempts++;
             
-            // Check for Memberstack 2.0 (auto-initialized)
-            if (typeof window !== 'undefined' && window.memberstack) {
-                this.memberstack = window.memberstack;
-                this.isInitialized = true;
-                console.log('✅ Memberstack 2.0 detected and ready');
-                
-                // Check if user is already signed in
-                await this.checkExistingSession();
-            }
-            // Check for initialized $memberstackDom
-            else if (typeof window !== 'undefined' && window.$memberstackDom) {
+            // Check for Memberstack DOM instance (auto-initialized via data attribute)
+            if (typeof window !== 'undefined' && window.$memberstackDom) {
                 this.memberstack = window.$memberstackDom;
                 this.isInitialized = true;
-                console.log('✅ Using initialized $memberstackDom');
+                console.log('✅ Memberstack DOM package ready');
                 
                 // Check if user is already signed in
                 await this.checkExistingSession();
             }
-            // Try to initialize Memberstack 1.0
-            else if (typeof window !== 'undefined' && window.MemberStack) {
-                console.log('Initializing Memberstack 1.0...');
-                try {
-                    window.$memberstackDom = window.MemberStack.init({
-                        publicKey: 'pk_4f1166cfc3dc4380712e'
-                    });
+            // Try to initialize if MemberStack global is available
+            else if (typeof window !== 'undefined' && window.MemberStack && window.MemberStack.onReady) {
+                console.log('Waiting for Memberstack DOM to be ready...');
+                window.MemberStack.onReady.then(() => {
                     this.memberstack = window.$memberstackDom;
                     this.isInitialized = true;
-                    console.log('✅ Memberstack 1.0 initialized');
-                    await this.checkExistingSession();
-                } catch (initError) {
-                    console.error('Memberstack init error:', initError);
-                    setTimeout(() => this.initializeMemberstack(), 500);
-                }
+                    console.log('✅ Memberstack DOM initialized via onReady');
+                    this.checkExistingSession();
+                });
             }
             // Retry if not ready yet
             else if (this.initializationAttempts < this.maxAttempts) {
@@ -71,8 +56,8 @@ class AuthService {
         if (!this.memberstack && !window.memberstack) return;
         
         try {
-            // Memberstack 2.0 API
-            const member = await window.memberstack.getCurrentMember();
+            // Memberstack DOM package API
+            const member = await this.memberstack.getCurrentMember();
             if (member && member.data) {
                 const sessionUser = {
                     id: member.id,
@@ -122,8 +107,8 @@ class AuthService {
             console.log('🔐 Attempting Memberstack sign in for:', email);
             
             try {
-                // Memberstack 2.0 uses different API
-                const response = await window.memberstack.loginMemberEmailPassword({
+                // Memberstack DOM package API
+                const response = await this.memberstack.signIn({
                     email: email,
                     password: password
                 });
@@ -206,8 +191,8 @@ class AuthService {
             console.log('📝 Creating Memberstack account for:', userData.email);
             
             try {
-                // Memberstack 2.0 signup API
-                const response = await window.memberstack.signupMemberEmailPassword({
+                // Memberstack DOM package signup API
+                const response = await this.memberstack.signUp({
                     email: userData.email,
                     password: userData.password,
                     customFields: {
@@ -271,9 +256,9 @@ class AuthService {
     // Sign out
     async signOut() {
         try {
-            // Try Memberstack 2.0 sign out
-            if (window.memberstack) {
-                await window.memberstack.logout();
+            // Try Memberstack DOM package sign out
+            if (this.memberstack) {
+                await this.memberstack.signOut();
             }
         } catch (error) {
             console.error('Memberstack sign out error:', error);

@@ -15,36 +15,33 @@ window.MEMBERSTACK_CONFIG = {
     debug: true
 };
 
-// Initialize Memberstack when DOM is ready
+// Initialize Memberstack DOM package when ready
 document.addEventListener('DOMContentLoaded', function() {
-    // Wait a moment for Memberstack script to fully load
-    setTimeout(function() {
-        if (typeof window.memberstack !== 'undefined') {
-            // Memberstack 2.0 is already initialized via data attribute
-            window.$memberstackDom = window.memberstack;
-            console.log('✅ Memberstack 2.0 already initialized');
-        } else if (typeof window.MemberStack !== 'undefined') {
-            // Initialize Memberstack 1.0
-            try {
-                window.$memberstackDom = window.MemberStack.init({
-                    publicKey: window.MEMBERSTACK_CONFIG.publicKey
-                });
-                console.log('✅ Memberstack 1.0 initialized with public key');
-            } catch (error) {
-                console.error('❌ Memberstack initialization error:', error);
-            }
-        } else {
-            console.warn('⚠️ Memberstack not found. Retrying...');
-            
-            // Final retry after longer delay
-            setTimeout(function() {
-                if (typeof window.memberstack !== 'undefined') {
-                    window.$memberstackDom = window.memberstack;
-                    console.log('✅ Memberstack 2.0 found after retry');
-                } else {
-                    console.error('❌ Memberstack could not be initialized');
-                }
-            }, 2000);
+    // The DOM package auto-initializes via the data-memberstack-app attribute
+    // We just need to wait for it to be ready
+    
+    function checkMemberstackReady() {
+        if (typeof window.$memberstackDom !== 'undefined') {
+            console.log('✅ Memberstack DOM package ready');
+            return true;
+        } else if (typeof window.MemberStack !== 'undefined' && window.MemberStack.onReady) {
+            console.log('⏳ Waiting for Memberstack DOM package to initialize...');
+            window.MemberStack.onReady.then(function() {
+                console.log('✅ Memberstack DOM package initialized');
+            });
+            return true;
         }
-    }, 500);
+        return false;
+    }
+    
+    // Check immediately
+    if (!checkMemberstackReady()) {
+        // Retry after delay
+        setTimeout(function() {
+            if (!checkMemberstackReady()) {
+                console.error('❌ Memberstack DOM package could not be initialized');
+                console.error('Make sure the script tag includes data-memberstack-app attribute');
+            }
+        }, 2000);
+    }
 });
