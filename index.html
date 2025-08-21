@@ -9,8 +9,8 @@
     <link rel="stylesheet" href="fonts.css">
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-    <!-- Memberstack Direct API Authentication -->
-    <script src="js/memberstack-direct-auth.js"></script>
+    <!-- Memberstack DOM Package -->
+    <script src="https://static.memberstack.com/scripts/v1/memberstack-dom.js" data-memberstack-app="pk_4f1166cfc3dc4380712e"></script>
     <!-- Webflow CMS Sync -->
     <script src="js/webflow-sync.js" defer></script>
     <script src="js/webflow-provider-sync.js" defer></script>
@@ -2154,42 +2154,70 @@
             dropdown.classList.toggle('show');
         }
 
-        function signOut() {
-            if (window.authService) {
-                window.authService.signOut();
-            } else {
+        async function signOut() {
+            try {
+                if (window.$memberstackDom) {
+                    await window.$memberstackDom.signOut();
+                }
+                window.location.href = 'auth.html';
+            } catch (error) {
+                console.error('Sign out error:', error);
                 // Fallback
                 localStorage.removeItem('currentUser');
                 window.location.href = 'auth.html';
             }
         }
 
-        function initializeUserInterface() {
-            // Check if authService is available
-            if (!window.authService) {
-                console.log('Auth service not yet loaded, retrying...');
-                setTimeout(() => initializeUserInterface(), 500);
-                return;
-            }
+        async function initializeUserInterface() {
+            try {
+                // Wait for Memberstack to be ready
+                if (!window.$memberstackDom) {
+                    if (window.MemberStack && window.MemberStack.onReady) {
+                        console.log('Waiting for Memberstack to initialize...');
+                        await window.MemberStack.onReady;
+                    } else {
+                        console.log('Memberstack not yet loaded, retrying...');
+                        setTimeout(() => initializeUserInterface(), 500);
+                        return;
+                    }
+                }
 
-            // Check authentication
-            if (!window.authService.isAuthenticated()) {
-                console.log('User not authenticated, redirecting to auth page...');
-                window.location.href = 'auth.html';
-                return;
-            }
+                // Check authentication
+                const member = await window.$memberstackDom.getCurrentMember();
+                if (!member || !member.data) {
+                    console.log('User not authenticated, redirecting to auth page...');
+                    window.location.href = 'auth.html';
+                    return;
+                }
 
-            // Load user info
-            const user = window.authService.getCurrentUser();
-            if (user) {
+                // Load user info
+                const userData = member.data;
+                console.log('Current member data:', userData);
+                
                 // Update user display
-                document.getElementById('user-name').textContent = user.name || 'User';
-                document.getElementById('user-email').textContent = user.email || '';
-                document.getElementById('user-role').textContent = user.role || 'Member';
+                const displayName = userData.customFields?.name || userData.email?.split('@')[0] || 'User';
+                const userRole = userData.customFields?.role || 'Provider';
+                
+                document.getElementById('user-name').textContent = displayName;
+                document.getElementById('user-email').textContent = userData.email || '';
+                document.getElementById('user-role').textContent = userRole;
                 
                 // Generate user initials for avatar
-                const initials = (user.name || user.email || 'U').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                const initials = displayName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
                 document.getElementById('user-avatar').innerHTML = `<span>${initials}</span>`;
+                
+                // Store member info globally for provider sync
+                window.currentMember = {
+                    id: userData.id,
+                    memberId: userData.id,
+                    email: userData.email,
+                    name: displayName,
+                    role: userRole
+                };
+                
+            } catch (error) {
+                console.error('Authentication check failed:', error);
+                window.location.href = 'auth.html';
             }
         }
 

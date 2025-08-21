@@ -7,8 +7,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&family=Domine:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="fonts.css">
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-    <!-- Memberstack Direct API Authentication -->
-    <script src="js/memberstack-direct-auth.js"></script>
+    <!-- Memberstack DOM Package -->
+    <script src="https://static.memberstack.com/scripts/v1/memberstack-dom.js" data-memberstack-app="pk_4f1166cfc3dc4380712e"></script>
     <style>
         /* Design Variables - Matching main application */
         :root {
@@ -324,6 +324,205 @@
         </div>
     </div>
 
-    <script src="js/auth.js"></script>
+    <script>
+        // Memberstack DOM Authentication
+        let isSubmitting = false;
+
+        function showSignUp() {
+            document.getElementById('signin-form').classList.add('hidden');
+            document.getElementById('signup-form').classList.remove('hidden');
+        }
+
+        function showSignIn() {
+            document.getElementById('signup-form').classList.add('hidden');
+            document.getElementById('signin-form').classList.remove('hidden');
+        }
+
+        function showError(formType, message) {
+            const errorDiv = document.getElementById(`${formType}-error`);
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            
+            // Hide success message if showing
+            const successDiv = document.getElementById(`${formType}-success`);
+            successDiv.style.display = 'none';
+        }
+
+        function showSuccess(formType, message) {
+            const successDiv = document.getElementById(`${formType}-success`);
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            
+            // Hide error message if showing
+            const errorDiv = document.getElementById(`${formType}-error`);
+            errorDiv.style.display = 'none';
+        }
+
+        function hideMessages(formType) {
+            document.getElementById(`${formType}-error`).style.display = 'none';
+            document.getElementById(`${formType}-success`).style.display = 'none';
+        }
+
+        function setLoading(buttonId, loading) {
+            const button = document.getElementById(buttonId);
+            if (loading) {
+                button.innerHTML = '<span class="loading"></span>Signing in...';
+                button.disabled = true;
+            } else {
+                button.innerHTML = button.id === 'signin-btn' ? 'Sign In' : 'Create Account';
+                button.disabled = false;
+            }
+        }
+
+        // Wait for Memberstack to load
+        window.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, waiting for Memberstack...');
+            
+            // Check if already signed in and redirect
+            function checkAuth() {
+                if (window.MemberStack && window.MemberStack.onReady) {
+                    window.MemberStack.onReady.then(() => {
+                        console.log('Memberstack ready');
+                        if (window.$memberstackDom) {
+                            window.$memberstackDom.getCurrentMember().then(member => {
+                                if (member && member.data) {
+                                    console.log('User already logged in, redirecting...');
+                                    window.location.href = 'index.html';
+                                }
+                            }).catch(err => {
+                                console.log('No current member:', err);
+                            });
+                        }
+                    });
+                } else {
+                    // Retry after 500ms if Memberstack not ready
+                    setTimeout(checkAuth, 500);
+                }
+            }
+            
+            checkAuth();
+        });
+
+        // Sign In Form Handler
+        document.getElementById('signinForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (isSubmitting) return;
+            isSubmitting = true;
+            
+            hideMessages('auth');
+            setLoading('signin-btn', true);
+            
+            const email = document.getElementById('signin-email').value;
+            const password = document.getElementById('signin-password').value;
+            
+            console.log('Attempting sign in for:', email);
+            
+            try {
+                // Wait for Memberstack to be ready
+                if (!window.$memberstackDom) {
+                    if (window.MemberStack && window.MemberStack.onReady) {
+                        await window.MemberStack.onReady;
+                    } else {
+                        throw new Error('Memberstack not loaded');
+                    }
+                }
+                
+                console.log('Memberstack DOM available:', !!window.$memberstackDom);
+                
+                const result = await window.$memberstackDom.signIn({
+                    email: email,
+                    password: password
+                });
+                
+                console.log('Sign in result:', result);
+                
+                if (result && result.data) {
+                    showSuccess('auth', 'Sign in successful! Redirecting...');
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1500);
+                } else {
+                    throw new Error('Invalid email or password');
+                }
+                
+            } catch (error) {
+                console.error('Sign in error:', error);
+                showError('auth', error.message || 'Sign in failed. Please try again.');
+            } finally {
+                setLoading('signin-btn', false);
+                isSubmitting = false;
+            }
+        });
+
+        // Sign Up Form Handler
+        document.getElementById('signupForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (isSubmitting) return;
+            isSubmitting = true;
+            
+            hideMessages('signup');
+            setLoading('signup-btn', true);
+            
+            const name = document.getElementById('signup-name').value;
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            const confirmPassword = document.getElementById('signup-confirm-password').value;
+            const role = document.getElementById('signup-role').value;
+            
+            // Validate passwords match
+            if (password !== confirmPassword) {
+                showError('signup', 'Passwords do not match');
+                setLoading('signup-btn', false);
+                isSubmitting = false;
+                return;
+            }
+            
+            console.log('Attempting sign up for:', email);
+            
+            try {
+                // Wait for Memberstack to be ready
+                if (!window.$memberstackDom) {
+                    if (window.MemberStack && window.MemberStack.onReady) {
+                        await window.MemberStack.onReady;
+                    } else {
+                        throw new Error('Memberstack not loaded');
+                    }
+                }
+                
+                const result = await window.$memberstackDom.signUp({
+                    email: email,
+                    password: password,
+                    customFields: {
+                        name: name,
+                        role: role
+                    }
+                });
+                
+                console.log('Sign up result:', result);
+                
+                if (result && result.data) {
+                    showSuccess('signup', 'Account created successfully! Redirecting...');
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1500);
+                } else {
+                    throw new Error('Account creation failed');
+                }
+                
+            } catch (error) {
+                console.error('Sign up error:', error);
+                if (error.message && error.message.includes('already exists')) {
+                    showError('signup', 'An account with this email already exists. Please sign in instead.');
+                } else {
+                    showError('signup', error.message || 'Account creation failed. Please try again.');
+                }
+            } finally {
+                setLoading('signup-btn', false);
+                isSubmitting = false;
+            }
+        });
+    </script>
 </body>
 </html>

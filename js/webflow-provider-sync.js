@@ -351,10 +351,9 @@ class WebflowProviderSync {
     // Auto-fill memberId from authentication
     autoFillMemberId() {
         const memberIdField = document.getElementById('Member-ID');
-        if (memberIdField && window.authService) {
-            const user = window.authService.getCurrentUser();
-            if (user && user.memberId) {
-                memberIdField.value = user.memberId;
+        if (memberIdField && window.currentMember) {
+            if (window.currentMember.memberId) {
+                memberIdField.value = window.currentMember.memberId;
             }
         }
     }
