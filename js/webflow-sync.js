@@ -14,6 +14,7 @@ class WebflowSync {
         try {
             await this.loadCourses();
             this.setupEventListeners();
+            this.setupFilterListeners(); // Setup filter functionality
             this.startStatusPolling(); // Check for status updates
         } catch (error) {
             console.error('Failed to initialize Webflow sync:', error);
@@ -103,9 +104,15 @@ class WebflowSync {
                 archived: window.archivedCourses.length
             });
             
-            // Re-render courses
-            if (window.renderActiveCourses) window.renderActiveCourses();
-            if (window.renderArchivedCourses) window.renderArchivedCourses();
+            // Re-render courses with current filters
+            if (this.setupFilterListeners) {
+                // Trigger filtering if filters are set up
+                setTimeout(() => this.applyFilters(), 100);
+            } else {
+                // Fallback to original rendering
+                if (window.renderActiveCourses) window.renderActiveCourses();
+                if (window.renderArchivedCourses) window.renderArchivedCourses();
+            }
         }
     }
 
@@ -466,6 +473,221 @@ class WebflowSync {
                 submitBtn.textContent = 'Submit Application';
             }
         };
+    }
+
+    // Setup filter and search functionality
+    setupFilterListeners() {
+        const searchInput = document.getElementById('course-search');
+        const statusFilter = document.getElementById('status-filter');
+        const locationFilter = document.getElementById('location-filter');
+        const sortFilter = document.getElementById('sort-filter');
+
+        // Add event listeners for all filters
+        if (searchInput) {
+            searchInput.addEventListener('input', () => this.applyFilters());
+        }
+        if (statusFilter) {
+            statusFilter.addEventListener('change', () => this.applyFilters());
+        }
+        if (locationFilter) {
+            locationFilter.addEventListener('change', () => this.applyFilters());
+        }
+        if (sortFilter) {
+            sortFilter.addEventListener('change', () => this.applyFilters());
+        }
+    }
+
+    // Apply all filters and sorting
+    applyFilters() {
+        let filteredCourses = [...(window.courses || [])];
+        
+        // Get current filter values
+        const searchTerm = document.getElementById('course-search')?.value.toLowerCase() || '';
+        const statusFilter = document.getElementById('status-filter')?.value || '';
+        const locationFilter = document.getElementById('location-filter')?.value || '';
+        const sortOption = document.getElementById('sort-filter')?.value || 'newest';
+
+        // Apply search filter
+        if (searchTerm) {
+            filteredCourses = filteredCourses.filter(course => 
+                course.title.toLowerCase().includes(searchTerm) ||
+                course.description.toLowerCase().includes(searchTerm) ||
+                course.location.toLowerCase().includes(searchTerm)
+            );
+        }
+
+        // Apply status filter
+        if (statusFilter) {
+            filteredCourses = filteredCourses.filter(course => 
+                course.status === statusFilter
+            );
+        }
+
+        // Apply location filter
+        if (locationFilter) {
+            filteredCourses = filteredCourses.filter(course => 
+                course.location.toLowerCase() === locationFilter.toLowerCase()
+            );
+        }
+
+        // Apply sorting
+        filteredCourses = this.sortCourses(filteredCourses, sortOption);
+
+        // Render filtered courses
+        this.renderFilteredCourses(filteredCourses);
+
+        // Update results count
+        this.updateResultsCount(filteredCourses.length, window.courses?.length || 0);
+    }
+
+    // Sort courses based on selected option
+    sortCourses(courses, sortOption) {
+        return courses.sort((a, b) => {
+            switch (sortOption) {
+                case 'newest':
+                    return new Date(b.lastUpdated || 0) - new Date(a.lastUpdated || 0);
+                case 'oldest':
+                    return new Date(a.lastUpdated || 0) - new Date(b.lastUpdated || 0);
+                case 'name-asc':
+                    return a.title.localeCompare(b.title);
+                case 'name-desc':
+                    return b.title.localeCompare(a.title);
+                case 'price-low':
+                    return this.extractPrice(a.price) - this.extractPrice(b.price);
+                case 'price-high':
+                    return this.extractPrice(b.price) - this.extractPrice(a.price);
+                case 'updated':
+                    return new Date(b.lastUpdated || 0) - new Date(a.lastUpdated || 0);
+                default:
+                    return 0;
+            }
+        });
+    }
+
+    // Extract numeric price from price string
+    extractPrice(priceString) {
+        if (!priceString) return 0;
+        const match = priceString.match(/[\d,]+/);
+        return match ? parseInt(match[0].replace(/,/g, '')) : 0;
+    }
+
+    // Render filtered courses
+    renderFilteredCourses(courses) {
+        const activeCoursesContainer = document.getElementById('active-courses');
+        if (!activeCoursesContainer) return;
+
+        // Clear existing courses (except the sample card)
+        const existingCourses = activeCoursesContainer.querySelectorAll('.course-card:not([data-course-id="1"])');
+        existingCourses.forEach(card => card.remove());
+
+        // Hide sample card if we have real courses
+        const sampleCard = activeCoursesContainer.querySelector('[data-course-id="1"]');
+        if (sampleCard) {
+            sampleCard.style.display = courses.length > 0 ? 'none' : 'block';
+        }
+
+        // Render courses
+        courses.forEach(course => {
+            const courseCard = this.createCourseCard(course);
+            activeCoursesContainer.appendChild(courseCard);
+        });
+
+        // Show no results message if needed
+        if (courses.length === 0 && activeCoursesContainer.children.length === 1) {
+            this.showNoResultsMessage(activeCoursesContainer);
+        }
+    }
+
+    // Create course card element
+    createCourseCard(course) {
+        const card = document.createElement('div');
+        card.className = 'course-card';
+        card.setAttribute('data-course-id', course.id);
+        
+        // Determine status badge color
+        const statusClass = course.status === 'Published' ? 'published' : 
+                           course.status === 'In Review' ? 'review' : 'archived';
+        
+        card.innerHTML = `
+            <div class="course-image">${course.emoji}</div>
+            <div class="course-content">
+                <h3 class="course-title">${course.title}</h3>
+                <p class="course-description">${course.description}</p>
+                <div class="course-meta">
+                    <span class="course-price">${course.price}</span>
+                    <span class="course-duration">${course.duration}</span>
+                </div>
+                <div class="course-bottom">
+                    <div class="course-dates">
+                        <i data-lucide="calendar" class="course-icon"></i>
+                        <span>${course.dates}</span>
+                    </div>
+                    <span class="course-status status-${statusClass}">${course.status}</span>
+                </div>
+                <div class="course-actions">
+                    <button class="course-action-btn" onclick="editCourse('${course.id}')" title="Edit">
+                        <i data-lucide="edit" class="course-action-icon"></i>
+                    </button>
+                    <button class="course-action-btn" onclick="duplicateCourse('${course.id}')" title="Duplicate">
+                        <i data-lucide="copy" class="course-action-icon"></i>
+                    </button>
+                    <button class="course-action-btn" onclick="archiveCourse('${course.id}')" title="Archive">
+                        <i data-lucide="archive" class="course-action-icon"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        return card;
+    }
+
+    // Show no results message
+    showNoResultsMessage(container) {
+        const noResults = document.createElement('div');
+        noResults.className = 'no-results';
+        noResults.innerHTML = `
+            <div class="no-results-content">
+                <i data-lucide="search-x" class="no-results-icon"></i>
+                <h3>No courses found</h3>
+                <p>Try adjusting your filters or search terms</p>
+            </div>
+        `;
+        container.appendChild(noResults);
+    }
+
+    // Update results count
+    updateResultsCount(filtered, total) {
+        let countElement = document.getElementById('results-count');
+        if (!countElement) {
+            // Create results count element
+            countElement = document.createElement('div');
+            countElement.id = 'results-count';
+            countElement.className = 'results-count';
+            
+            const filtersContainer = document.querySelector('.dashboard-filters');
+            if (filtersContainer) {
+                filtersContainer.appendChild(countElement);
+            }
+        }
+        
+        if (filtered === total) {
+            countElement.textContent = `Showing all ${total} course${total !== 1 ? 's' : ''}`;
+        } else {
+            countElement.textContent = `Showing ${filtered} of ${total} course${total !== 1 ? 's' : ''}`;
+        }
+    }
+}
+
+// Clear all filters function
+function clearFilters() {
+    document.getElementById('course-search').value = '';
+    document.getElementById('status-filter').value = '';
+    document.getElementById('location-filter').value = '';
+    document.getElementById('sort-filter').value = 'newest';
+    
+    // Trigger filter application
+    if (window.webflowSync) {
+        window.webflowSync.applyFilters();
     }
 }
 
