@@ -310,16 +310,13 @@
         /* Dashboard Filter Controls */
         .dashboard-filters {
             margin-bottom: var(--spacing-xl);
-            padding: var(--spacing-lg);
-            background: var(--white);
-            border-radius: var(--border-radius-lg);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-            border: 1px solid var(--border-color);
+            padding-bottom: var(--spacing-lg);
+            border-bottom: 1px solid var(--border-color);
         }
 
         .filter-row {
             display: flex;
-            gap: var(--spacing-md);
+            gap: var(--spacing-lg);
             flex-wrap: wrap;
             align-items: center;
         }
@@ -328,6 +325,10 @@
             display: flex;
             flex-direction: column;
             min-width: 160px;
+        }
+
+        .filter-group:last-child {
+            margin-left: auto;
         }
 
         .filter-search {
@@ -397,7 +398,8 @@
             margin-top: var(--spacing-md);
             font-size: 14px;
             color: var(--text-secondary);
-            text-align: center;
+            text-align: left;
+            padding-top: var(--spacing-sm);
         }
 
         /* Status badges */
@@ -1198,9 +1200,6 @@
             <div id="dashboard-view">
                 <div class="dashboard-header">
                     <h1 class="dashboard-title">Course Dashboard</h1>
-                    <button class="btn btn-secondary" onclick="refreshCourseStatus()" id="refresh-btn">
-                        🔄 Refresh Status
-                    </button>
                 </div>
 
                 <!-- Filter Controls -->
@@ -1250,6 +1249,12 @@
                         <div class="filter-group">
                             <button class="btn btn-outline" onclick="clearFilters()" id="clear-filters">
                                 Clear Filters
+                            </button>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <button class="btn btn-secondary" onclick="refreshCourseStatus()" id="refresh-btn">
+                                🔄 Refresh Status
                             </button>
                         </div>
                     </div>
