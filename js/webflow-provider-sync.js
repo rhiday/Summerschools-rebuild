@@ -228,6 +228,9 @@ class WebflowProviderSync {
         // Override the provider form submission
         const originalProviderForm = document.getElementById('providerForm');
         if (originalProviderForm) {
+            // Auto-fill memberId if user is authenticated
+            this.autoFillMemberId();
+            
             originalProviderForm.addEventListener('submit', async (e) => {
                 e.preventDefault(); // Prevent default form submission
                 
@@ -343,6 +346,17 @@ class WebflowProviderSync {
                 }
             }
         };
+    }
+
+    // Auto-fill memberId from authentication
+    autoFillMemberId() {
+        const memberIdField = document.getElementById('Member-ID');
+        if (memberIdField && window.authService) {
+            const user = window.authService.getCurrentUser();
+            if (user && user.memberId) {
+                memberIdField.value = user.memberId;
+            }
+        }
     }
 }
 

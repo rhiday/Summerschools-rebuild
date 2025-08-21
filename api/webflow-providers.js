@@ -49,6 +49,9 @@ function formatProviderForWebflow(providerData, uploadedAssets = {}) {
             name: providerName,
             slug: generateSlug(providerName),
             
+            // Memberstack integration
+            'member-id': providerData['Member-ID'] || providerData.memberId || '',
+            
             // Provider details
             'company-description': providerData['Short-bio'] || providerData.shortBio || '',
             'company-desc-2': providerData['Details-school-bio'] || providerData.detailsSchoolBio || '',

@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In - Course Creator Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&family=Domine:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="fonts.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <!-- Memberstack DOM Package -->
+    <script src="https://static.memberstack.com/scripts/v1/memberstack-dom.js"></script>
+    <style>
+        /* Design Variables - Matching main application */
+        :root {
+            --primary-color: #FF6A3C;
+            --secondary-color: #182236;
+            --text-color: rgb(55, 57, 61);
+            --background-color: #F1DDC6;
+            --white: #ffffff;
+            --border-color: #E5E5E5;
+            --light-gray: #F8F9FA;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --error-color: #dc3545;
+            
+            --font-primary: "Open Sans", "Open Sans Local", sans-serif;
+            --font-paragraphs: "Gilroy", Arial, sans-serif;
+            --font-headings-h2: "Domine", sans-serif;
+            
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+            --border-radius: 8px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-primary);
+            color: var(--text-color);
+            background: linear-gradient(135deg, var(--background-color) 0%, #E8D4B8 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .auth-container {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: var(--spacing-xl);
+            width: 100%;
+            max-width: 400px;
+            position: relative;
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .auth-header h1 {
+            font-family: var(--font-headings-h2);
+            font-size: 28px;
+            color: var(--secondary-color);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .auth-header p {
+            font-family: var(--font-paragraphs);
+            color: rgb(73, 73, 73);
+            font-size: 16px;
+        }
+
+        .auth-form {
+            display: block;
+        }
+
+        .auth-form.hidden {
+            display: none;
+        }
+
+        .form-group {
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: var(--spacing-sm);
+            font-weight: 600;
+            color: var(--secondary-color);
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+            font-family: var(--font-primary);
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .form-group input.error {
+            border-color: var(--error-color);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px 24px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: var(--font-primary);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background-color: #E55A32;
+            transform: translateY(-2px);
+        }
+
+        .btn-primary:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .auth-switch {
+            text-align: center;
+            margin-top: var(--spacing-lg);
+            padding-top: var(--spacing-lg);
+            border-top: 1px solid var(--border-color);
+        }
+
+        .auth-switch p {
+            font-family: var(--font-paragraphs);
+            color: rgb(73, 73, 73);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .auth-switch button {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: underline;
+            font-family: var(--font-primary);
+        }
+
+        .auth-switch button:hover {
+            color: #E55A32;
+        }
+
+        .error-message {
+            background-color: #fee;
+            color: var(--error-color);
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--border-radius);
+            margin-bottom: var(--spacing-md);
+            border: 1px solid #fcc;
+            font-size: 14px;
+        }
+
+        .success-message {
+            background-color: #efe;
+            color: var(--success-color);
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--border-radius);
+            margin-bottom: var(--spacing-md);
+            border: 1px solid #cfc;
+            font-size: 14px;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: var(--spacing-sm);
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .demo-users {
+            background-color: var(--light-gray);
+            padding: var(--spacing-md);
+            border-radius: var(--border-radius);
+            margin-top: var(--spacing-lg);
+            border: 1px solid var(--border-color);
+        }
+
+        .demo-users h4 {
+            font-size: 14px;
+            color: var(--secondary-color);
+            margin-bottom: var(--spacing-sm);
+            font-weight: 600;
+        }
+
+        .demo-users p {
+            font-size: 12px;
+            color: rgb(73, 73, 73);
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .demo-users .demo-credential {
+            font-family: monospace;
+            background: var(--white);
+            padding: 2px 6px;
+            border-radius: 3px;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <!-- Sign In Form -->
+        <div id="signin-form" class="auth-form">
+            <div class="auth-header">
+                <h1>Welcome Back</h1>
+                <p>Sign in to access your course dashboard</p>
+            </div>
+            
+            <div id="auth-error" class="error-message" style="display: none;"></div>
+            <div id="auth-success" class="success-message" style="display: none;"></div>
+            
+            <form id="signinForm">
+                <div class="form-group">
+                    <label for="signin-email">Email Address</label>
+                    <input type="email" id="signin-email" name="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="signin-password">Password</label>
+                    <input type="password" id="signin-password" name="password" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" id="signin-btn">
+                    Sign In
+                </button>
+            </form>
+            
+            <div class="auth-switch">
+                <p>Don't have an account?</p>
+                <button type="button" onclick="showSignUp()">Create an account</button>
+            </div>
+            
+            <!-- Demo Users for Testing -->
+            <div class="demo-users">
+                <h4>Demo Accounts (for testing):</h4>
+                <p><strong>Provider:</strong> <span class="demo-credential">provider@test.com</span> / <span class="demo-credential">password123</span></p>
+                <p><strong>Admin:</strong> <span class="demo-credential">admin@test.com</span> / <span class="demo-credential">password123</span></p>
+            </div>
+        </div>
+        
+        <!-- Sign Up Form -->
+        <div id="signup-form" class="auth-form hidden">
+            <div class="auth-header">
+                <h1>Create Account</h1>
+                <p>Join our platform to manage your courses</p>
+            </div>
+            
+            <div id="signup-error" class="error-message" style="display: none;"></div>
+            <div id="signup-success" class="success-message" style="display: none;"></div>
+            
+            <form id="signupForm">
+                <div class="form-group">
+                    <label for="signup-name">Full Name</label>
+                    <input type="text" id="signup-name" name="name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="signup-email">Email Address</label>
+                    <input type="email" id="signup-email" name="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="signup-password">Password</label>
+                    <input type="password" id="signup-password" name="password" required minlength="6">
+                </div>
+                
+                <div class="form-group">
+                    <label for="signup-confirm-password">Confirm Password</label>
+                    <input type="password" id="signup-confirm-password" name="confirmPassword" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="signup-role">Account Type</label>
+                    <select id="signup-role" name="role" required style="width: 100%; padding: 12px 16px; border: 2px solid var(--border-color); border-radius: var(--border-radius); font-size: 16px;">
+                        <option value="">Select account type</option>
+                        <option value="provider">Course Provider</option>
+                        <option value="admin">Platform Admin</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" id="signup-btn">
+                    Create Account
+                </button>
+            </form>
+            
+            <div class="auth-switch">
+                <p>Already have an account?</p>
+                <button type="button" onclick="showSignIn()">Sign in here</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+</body>
+</html>

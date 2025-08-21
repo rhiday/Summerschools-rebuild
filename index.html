@@ -9,6 +9,10 @@
     <link rel="stylesheet" href="fonts.css">
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <!-- Memberstack DOM Package -->
+    <script src="https://static.memberstack.com/scripts/v1/memberstack-dom.js"></script>
+    <!-- Authentication -->
+    <script src="js/auth.js" defer></script>
     <!-- Webflow CMS Sync -->
     <script src="js/webflow-sync.js" defer></script>
     <script src="js/webflow-provider-sync.js" defer></script>
@@ -145,19 +149,105 @@
             display: flex;
             align-items: center;
             gap: var(--spacing-md);
+            position: relative;
         }
-
+        
+        .user-name {
+            font-family: var(--font-primary);
+            font-weight: 600;
+            color: var(--text-color);
+            font-size: 14px;
+        }
+        
+        .user-dropdown {
+            position: relative;
+        }
+        
         .user-avatar {
-            width: 32px;
-            height: 32px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
-            background: var(--secondary-color);
+            background: var(--primary-color);
             color: white;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 12px;
+            font-size: 16px;
             font-weight: bold;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .user-avatar:hover {
+            background: #E55A32;
+            border-color: var(--border-color);
+        }
+        
+        .user-dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 8px;
+            background: var(--white);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            min-width: 200px;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+        }
+        
+        .user-dropdown-menu.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .user-info {
+            padding: var(--spacing-md);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .user-email {
+            font-size: 14px;
+            color: var(--text-color);
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .user-role {
+            font-size: 12px;
+            color: rgb(73, 73, 73);
+            text-transform: capitalize;
+        }
+        
+        .dropdown-divider {
+            height: 1px;
+            background-color: var(--border-color);
+            margin: 0;
+        }
+        
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: 12px var(--spacing-md);
+            color: var(--text-color);
+            text-decoration: none;
+            font-size: 14px;
+            transition: background-color 0.2s ease;
+        }
+        
+        .dropdown-item:hover {
+            background-color: var(--light-gray);
+        }
+        
+        .dropdown-item i {
+            width: 16px;
+            height: 16px;
         }
 
         /* Main Layout */
@@ -754,6 +844,13 @@
         .form-group {
             margin-bottom: var(--spacing-md);
         }
+        
+        .field-help-text {
+            font-size: 12px;
+            color: rgb(73, 73, 73);
+            margin-top: 4px;
+            font-style: italic;
+        }
 
         .form-label {
             display: block;
@@ -1167,7 +1264,27 @@
                 <li><a href="#" class="nav-item">Help</a></li>
             </ul>
             <div class="user-menu">
-                <div class="user-avatar" onclick="showProfile()" style="cursor: pointer;" title="Profile">HS</div>
+                <span id="user-name" class="user-name">Loading...</span>
+                <div class="user-dropdown">
+                    <div class="user-avatar" onclick="toggleUserMenu()" style="cursor: pointer;" title="Profile" id="user-avatar">
+                        <i data-lucide="user"></i>
+                    </div>
+                    <div class="user-dropdown-menu" id="user-dropdown-menu">
+                        <div class="user-info">
+                            <div class="user-email" id="user-email">user@example.com</div>
+                            <div class="user-role" id="user-role">Provider</div>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <a href="#" onclick="showProfile()" class="dropdown-item">
+                            <i data-lucide="user"></i>
+                            Profile Settings
+                        </a>
+                        <a href="#" onclick="signOut()" class="dropdown-item">
+                            <i data-lucide="log-out"></i>
+                            Sign Out
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </nav>
@@ -1640,6 +1757,20 @@
                         <h3 class="form-section-title">School Information</h3>
                         
                         <div class="form-group">
+                            <label class="form-label" for="Member-ID">Memberstack ID*</label>
+                            <input 
+                                type="text" 
+                                id="Member-ID" 
+                                name="Member-ID" 
+                                class="form-input course-input-field w-input" 
+                                placeholder="Enter your Memberstack member ID"
+                                readonly
+                                style="background-color: #f8f9fa; color: #6c757d;"
+                            >
+                            <div class="field-help-text">This will be automatically filled when you're signed in</div>
+                        </div>
+
+                        <div class="form-group">
                             <label class="form-label" for="School-name">School name*</label>
                             <input 
                                 type="text" 
@@ -2018,6 +2149,52 @@
             // Update navigation active states
             updateNavActiveStates('profile');
         }
+
+        // Authentication and User Menu Functions
+        function toggleUserMenu() {
+            const dropdown = document.getElementById('user-dropdown-menu');
+            dropdown.classList.toggle('show');
+        }
+
+        function signOut() {
+            if (window.authService) {
+                window.authService.signOut();
+            } else {
+                // Fallback
+                localStorage.removeItem('currentUser');
+                window.location.href = 'auth.html';
+            }
+        }
+
+        function initializeUserInterface() {
+            // Check authentication
+            if (window.authService && !window.authService.requireAuth()) {
+                return; // Will redirect to auth page
+            }
+
+            // Load user info
+            const user = window.authService ? window.authService.getCurrentUser() : null;
+            if (user) {
+                // Update user display
+                document.getElementById('user-name').textContent = user.name || 'User';
+                document.getElementById('user-email').textContent = user.email || '';
+                document.getElementById('user-role').textContent = user.role || 'Member';
+                
+                // Generate user initials for avatar
+                const initials = (user.name || user.email || 'U').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                document.getElementById('user-avatar').innerHTML = `<span>${initials}</span>`;
+            }
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            const dropdown = document.getElementById('user-dropdown-menu');
+            const userMenu = document.querySelector('.user-dropdown');
+            
+            if (dropdown && userMenu && !userMenu.contains(e.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
 
         function updateNavActiveStates(activeView) {
             // Update nav menu items
@@ -2669,6 +2846,11 @@
             initializeIcons();
             initializeFileUploads();
             initializeRichTextEditors();
+            
+            // Initialize authentication and user interface
+            setTimeout(() => {
+                initializeUserInterface();
+            }, 100);
         });
     </script>
 </body>
