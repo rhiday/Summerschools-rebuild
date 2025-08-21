@@ -7,8 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&family=Domine:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="fonts.css">
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-    <!-- Memberstack DOM Package -->
-    <script src="https://static.memberstack.com/scripts/v1/memberstack-dom.js" data-memberstack-app="pk_4f1166cfc3dc4380712e"></script>
+    <!-- Load Memberstack at end of body instead -->
     <style>
         /* Design Variables - Matching main application */
         :root {
@@ -374,33 +373,96 @@
             }
         }
 
-        // Wait for Memberstack to load
-        window.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM loaded, waiting for Memberstack...');
-            
-            // Check if already signed in and redirect
-            function checkAuth() {
-                if (window.MemberStack && window.MemberStack.onReady) {
-                    window.MemberStack.onReady.then(() => {
-                        console.log('Memberstack ready');
-                        if (window.$memberstackDom) {
-                            window.$memberstackDom.getCurrentMember().then(member => {
-                                if (member && member.data) {
-                                    console.log('User already logged in, redirecting...');
-                                    window.location.href = 'index.html';
+        // Enhanced Memberstack loading with better error handling
+        let memberstackLoadAttempts = 0;
+        const maxLoadAttempts = 20; // 10 seconds total
+
+        function waitForMemberstack() {
+            return new Promise((resolve, reject) => {
+                function checkMemberstack() {
+                    console.log(`Checking Memberstack... attempt ${memberstackLoadAttempts + 1}`);
+                    
+                    // Check multiple possible states
+                    if (window.$memberstackDom) {
+                        console.log('✅ $memberstackDom found directly');
+                        resolve(window.$memberstackDom);
+                        return;
+                    }
+                    
+                    if (window.MemberStack) {
+                        console.log('🔄 MemberStack found, waiting for onReady...');
+                        if (window.MemberStack.onReady) {
+                            window.MemberStack.onReady.then(() => {
+                                if (window.$memberstackDom) {
+                                    console.log('✅ $memberstackDom ready after onReady');
+                                    resolve(window.$memberstackDom);
+                                } else {
+                                    console.log('❌ onReady fired but no $memberstackDom');
+                                    reject(new Error('Memberstack DOM not available after onReady'));
                                 }
-                            }).catch(err => {
-                                console.log('No current member:', err);
-                            });
+                            }).catch(reject);
+                            return;
                         }
-                    });
-                } else {
-                    // Retry after 500ms if Memberstack not ready
-                    setTimeout(checkAuth, 500);
+                    }
+                    
+                    memberstackLoadAttempts++;
+                    if (memberstackLoadAttempts >= maxLoadAttempts) {
+                        console.error('❌ Memberstack failed to load after', maxLoadAttempts, 'attempts');
+                        reject(new Error('Memberstack failed to load'));
+                        return;
+                    }
+                    
+                    // Try again after 500ms
+                    setTimeout(checkMemberstack, 500);
                 }
-            }
+                
+                checkMemberstack();
+            });
+        }
+
+        // Initialize when DOM is ready
+        window.addEventListener('DOMContentLoaded', async function() {
+            console.log('DOM loaded, initializing Memberstack authentication...');
             
-            checkAuth();
+            // Show loading status
+            const errorDiv = document.getElementById('auth-error');
+            errorDiv.textContent = 'Loading authentication system...';
+            errorDiv.style.display = 'block';
+            errorDiv.style.backgroundColor = '#d1ecf1';
+            errorDiv.style.color = '#0c5460';
+            errorDiv.style.borderColor = '#bee5eb';
+            
+            try {
+                // Wait for Memberstack to load
+                const memberstack = await waitForMemberstack();
+                console.log('🎉 Memberstack loaded successfully');
+                
+                // Hide loading message and reset styling
+                hideMessages('auth');
+                const errorDiv = document.getElementById('auth-error');
+                errorDiv.style.backgroundColor = '';
+                errorDiv.style.color = '';
+                errorDiv.style.borderColor = '';
+                
+                // Check if already signed in
+                try {
+                    const member = await memberstack.getCurrentMember();
+                    if (member && member.data) {
+                        console.log('User already logged in, redirecting...');
+                        showSuccess('auth', 'Already signed in. Redirecting...');
+                        setTimeout(() => {
+                            window.location.href = 'index.html';
+                        }, 1000);
+                        return;
+                    }
+                } catch (err) {
+                    console.log('No current member (this is normal for signed-out users)');
+                }
+                
+            } catch (error) {
+                console.error('Failed to load Memberstack:', error);
+                showError('auth', 'Authentication system failed to load. Please refresh the page.');
+            }
         });
 
         // Sign In Form Handler
@@ -419,18 +481,11 @@
             console.log('Attempting sign in for:', email);
             
             try {
-                // Wait for Memberstack to be ready
-                if (!window.$memberstackDom) {
-                    if (window.MemberStack && window.MemberStack.onReady) {
-                        await window.MemberStack.onReady;
-                    } else {
-                        throw new Error('Memberstack not loaded');
-                    }
-                }
+                // Ensure Memberstack is loaded
+                const memberstack = await waitForMemberstack();
+                console.log('Memberstack ready for sign in');
                 
-                console.log('Memberstack DOM available:', !!window.$memberstackDom);
-                
-                const result = await window.$memberstackDom.signIn({
+                const result = await memberstack.signIn({
                     email: email,
                     password: password
                 });
@@ -482,16 +537,11 @@
             console.log('Attempting sign up for:', email);
             
             try {
-                // Wait for Memberstack to be ready
-                if (!window.$memberstackDom) {
-                    if (window.MemberStack && window.MemberStack.onReady) {
-                        await window.MemberStack.onReady;
-                    } else {
-                        throw new Error('Memberstack not loaded');
-                    }
-                }
+                // Ensure Memberstack is loaded
+                const memberstack = await waitForMemberstack();
+                console.log('Memberstack ready for sign up');
                 
-                const result = await window.$memberstackDom.signUp({
+                const result = await memberstack.signUp({
                     email: email,
                     password: password,
                     customFields: {
@@ -523,6 +573,35 @@
                 isSubmitting = false;
             }
         });
+
+        // Manual Memberstack loading as fallback
+        function loadMemberstackManually() {
+            console.log('Loading Memberstack manually...');
+            
+            // Set config first
+            window.memberstackConfig = {
+                publicKey: "pk_4f1166cfc3dc4380712e"
+            };
+            
+            // Load script
+            const script = document.createElement('script');
+            script.src = 'https://static.memberstack.com/scripts/v1/memberstack-dom.js';
+            script.setAttribute('data-memberstack-app', 'pk_4f1166cfc3dc4380712e');
+            script.onload = () => console.log('✅ Memberstack script loaded manually');
+            script.onerror = () => console.error('❌ Failed to load Memberstack script manually');
+            document.head.appendChild(script);
+        }
+
+        // Try manual loading after 2 seconds if auto-loading fails
+        setTimeout(() => {
+            if (!window.MemberStack && !window.$memberstackDom) {
+                console.log('Auto-loading failed, trying manual loading...');
+                loadMemberstackManually();
+            }
+        }, 2000);
     </script>
+
+    <!-- Primary Memberstack Loading -->
+    <script src="https://static.memberstack.com/scripts/v1/memberstack-dom.js" data-memberstack-app="pk_4f1166cfc3dc4380712e"></script>
 </body>
 </html>
