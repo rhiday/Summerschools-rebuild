@@ -4,7 +4,8 @@
   "description": "SummerSchools Course Management System with Webflow CMS Integration",
   "main": "index.html",
   "scripts": {
-    "dev": "vercel dev",
+    "start": "python3 -m http.server 8000",
+    "dev": "vercel dev --listen 3000",
     "deploy": "vercel --prod",
     "test": "echo \"No tests configured\""
   },

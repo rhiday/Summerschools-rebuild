@@ -4,6 +4,7 @@
       "maxDuration": 10
     }
   },
+  "devCommand": null,
   "rewrites": [
     {
       "source": "/api/:path*",

@@ -8,7 +8,42 @@
     <link rel="stylesheet" href="fonts.css">
     
     <!-- MEMBERSTACK OFFICIAL INTEGRATION - CORRECT APP ID -->
+    <script>
+        console.log('=== MEMBERSTACK LOADING DEBUG ===');
+        console.log('Script loading started...');
+        console.log('Current URL:', window.location.href);
+        console.log('User Agent:', navigator.userAgent);
+        
+        // Monitor script loading
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                console.log('=== MEMBERSTACK LOADING CHECK (2s) ===');
+                console.log('window.MemberStack:', typeof window.MemberStack);
+                console.log('window.$memberstackDom:', typeof window.$memberstackDom);
+                
+                if (!window.MemberStack) {
+                    console.error('❌ MEMBERSTACK SCRIPT FAILED TO LOAD');
+                    console.log('Possible causes: CDN blocked, network issues, or script error');
+                    console.log('Check network tab for loading errors');
+                }
+                
+                if (!window.$memberstackDom && window.MemberStack) {
+                    console.error('❌ MEMBERSTACK DOM API NOT AVAILABLE');
+                    console.log('MemberStack loaded but $memberstackDom not initialized');
+                }
+            }, 2000);
+        });
+        
+        // Network error detection
+        window.addEventListener('error', function(e) {
+            if (e.target.tagName === 'SCRIPT' && e.target.src.includes('memberstack')) {
+                console.error('❌ MEMBERSTACK SCRIPT LOADING ERROR:', e.target.src);
+            }
+        });
+    </script>
     <script src="https://static.memberstack.com/scripts/v1/memberstack-dom.js" data-memberstack-app="app_cm42ruz6100e40st17ebveb3p"></script>
+    <!-- Enhanced Auth Manager -->
+    <script src="js/auth-manager.js"></script>
     
     <style>
         /* Design Variables - Matching main application */
@@ -207,7 +242,7 @@
     </div>
 
     <script>
-        // DIRECT MEMBERSTACK API APPROACH - SIMPLE
+        // ENHANCED AUTHENTICATION WITH FALLBACK SUPPORT
         let isSigningIn = false;
 
         function showStatus(message, type = 'info') {
@@ -234,55 +269,68 @@
             document.getElementById('login-status').style.display = 'none';
         }
 
-        // Wait for Memberstack and check if already logged in
+        // Wait for AuthManager and check if already logged in
         window.addEventListener('load', function() {
-            console.log('🔄 Checking Memberstack...');
+            console.log('🔄 Waiting for AuthManager...');
             
-            function initMemberstack() {
-                if (window.MemberStack && window.MemberStack.onReady) {
-                    console.log('✅ MemberStack found');
+            // Wait for AuthManager to be ready
+            function waitForAuthManager() {
+                if (window.authManager) {
+                    console.log('✅ AuthManager found');
                     
-                    window.MemberStack.onReady.then(() => {
-                        console.log('✅ Memberstack ready');
+                    window.authManager.on('onReady', function() {
+                        console.log('✅ AuthManager ready');
                         
-                        if (window.$memberstackDom) {
-                            // Check if already logged in
-                            window.$memberstackDom.getCurrentMember().then(member => {
-                                if (member && member.data) {
-                                    console.log('✅ Already logged in, redirecting...');
-                                    showStatus('Already signed in. Redirecting...', 'success');
-                                    setTimeout(() => {
-                                        window.location.href = '/index.html';
-                                    }, 1000);
-                                } else {
-                                    console.log('Ready for login');
-                                    hideStatus();
-                                }
-                            }).catch(() => {
-                                console.log('No current member - ready for login');
-                                hideStatus();
-                            });
+                        // Check if already logged in
+                        const currentUser = window.authManager.getCurrentUser();
+                        if (currentUser) {
+                            console.log('✅ Already logged in:', currentUser.email);
+                            showStatus(`Already signed in as ${currentUser.email}. Redirecting...`, 'success');
+                            setTimeout(() => {
+                                window.location.href = '/index.html';
+                            }, 1500);
+                        } else {
+                            console.log('Ready for login');
+                            hideStatus();
+                            
+                            // Show available test accounts for localhost
+                            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                                showDevHints();
+                            }
                         }
-                    }).catch(error => {
-                        console.error('❌ Memberstack onReady error:', error);
-                        showStatus('Authentication system error. Please refresh.', 'error');
                     });
                 } else {
-                    console.log('⏳ Memberstack not ready, retrying...');
-                    setTimeout(initMemberstack, 500);
+                    console.log('⏳ AuthManager not ready, retrying...');
+                    setTimeout(waitForAuthManager, 300);
                 }
             }
             
-            initMemberstack();
+            waitForAuthManager();
         });
 
-        // Handle form submission manually
+        function showDevHints() {
+            // Add development hints below the form
+            const container = document.querySelector('.auth-container');
+            const hintsDiv = document.createElement('div');
+            hintsDiv.innerHTML = `
+                <div style="margin-top: 20px; padding: 15px; background: #e3f2fd; border-radius: 8px; font-size: 14px;">
+                    <strong>🔧 Development Mode</strong><br>
+                    Try these test accounts:<br>
+                    • shahriar.rhiday@gmail.com / password123<br>
+                    • provider@test.com / password123<br>
+                    • admin@test.com / password123
+                </div>
+            `;
+            container.appendChild(hintsDiv);
+        }
+
+        // Handle form submission with AuthManager
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('loginForm');
             const signInBtn = document.getElementById('signInBtn');
             
             form.addEventListener('submit', async function(e) {
-                e.preventDefault(); // PREVENT DEFAULT FORM SUBMISSION
+                e.preventDefault();
                 
                 if (isSigningIn) return;
                 isSigningIn = true;
@@ -298,25 +346,19 @@
                 showStatus('Signing in...', 'info');
                 
                 try {
-                    // Wait for Memberstack to be ready
-                    if (!window.$memberstackDom) {
-                        if (window.MemberStack && window.MemberStack.onReady) {
-                            await window.MemberStack.onReady;
-                        } else {
-                            throw new Error('Memberstack not available');
-                        }
+                    // Wait for AuthManager if not ready
+                    if (!window.authManager) {
+                        throw new Error('Authentication system not loaded');
                     }
                     
-                    // Attempt sign in
-                    const result = await window.$memberstackDom.signIn({
-                        email: email,
-                        password: password
-                    });
+                    // Attempt sign in with AuthManager
+                    const result = await window.authManager.signIn(email, password);
                     
                     console.log('✅ Sign in result:', result);
                     
                     if (result && result.data) {
-                        showStatus('Sign in successful! Redirecting...', 'success');
+                        const source = result.data.source || 'memberstack';
+                        showStatus(`Sign in successful! (${source}) Redirecting...`, 'success');
                         setTimeout(() => {
                             window.location.href = '/index.html';
                         }, 1500);

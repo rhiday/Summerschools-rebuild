@@ -2,7 +2,11 @@
 // This file contains the public configuration for Memberstack
 
 window.MEMBERSTACK_CONFIG = {
-    // Memberstack public key
+    // Memberstack app ID (matches the script tag)
+    appId: 'app_cm42ruz6100e40st17ebveb3p',
+    
+    // Memberstack public key - UPDATE THIS WITH YOUR ACTUAL PUBLIC KEY
+    // Get this from Memberstack Dashboard > Settings > API Keys
     publicKey: 'pk_4f1166cfc3dc4380712e',
     
     // Optional: Custom login redirect
@@ -12,7 +16,13 @@ window.MEMBERSTACK_CONFIG = {
     signupRedirect: '/index.html',
     
     // Optional: Enable debug mode for development
-    debug: true
+    debug: true,
+    
+    // Development settings
+    development: {
+        allowLocalhost: true,
+        corsOrigins: ['http://localhost:8000', 'http://127.0.0.1:8000']
+    }
 };
 
 // Initialize Memberstack DOM package when ready
