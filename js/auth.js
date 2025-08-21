@@ -68,11 +68,12 @@ class AuthService {
 
     // Check for existing Memberstack session
     async checkExistingSession() {
-        if (!this.memberstack) return;
+        if (!this.memberstack && !window.memberstack) return;
         
         try {
-            const member = await this.memberstack.getCurrentMember();
-            if (member) {
+            // Memberstack 2.0 API
+            const member = await window.memberstack.getCurrentMember();
+            if (member && member.data) {
                 const sessionUser = {
                     id: member.id,
                     memberId: member.id,
@@ -121,7 +122,8 @@ class AuthService {
             console.log('🔐 Attempting Memberstack sign in for:', email);
             
             try {
-                const response = await this.memberstack.signIn({
+                // Memberstack 2.0 uses different API
+                const response = await window.memberstack.loginMemberEmailPassword({
                     email: email,
                     password: password
                 });
@@ -204,10 +206,11 @@ class AuthService {
             console.log('📝 Creating Memberstack account for:', userData.email);
             
             try {
-                const response = await this.memberstack.signUp({
+                // Memberstack 2.0 signup API
+                const response = await window.memberstack.signupMemberEmailPassword({
                     email: userData.email,
                     password: userData.password,
-                    metadata: {
+                    customFields: {
                         name: userData.name,
                         role: userData.role
                     }
@@ -268,9 +271,9 @@ class AuthService {
     // Sign out
     async signOut() {
         try {
-            // Try Memberstack sign out first
-            if (this.isInitialized && this.memberstack) {
-                await this.memberstack.signOut();
+            // Try Memberstack 2.0 sign out
+            if (window.memberstack) {
+                await window.memberstack.logout();
             }
         } catch (error) {
             console.error('Memberstack sign out error:', error);

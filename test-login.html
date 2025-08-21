@@ -198,7 +198,8 @@
                 log(`Attempting login with: ${testEmail}`, 'info');
                 log('Calling memberstack.signIn()...', 'info');
                 
-                const response = await memberstack.signIn({
+                // Use Memberstack 2.0 API
+                const response = await window.memberstack.loginMemberEmailPassword({
                     email: testEmail,
                     password: testPassword
                 });
@@ -245,7 +246,7 @@
             
             try {
                 log('Calling memberstack.getCurrentMember()...', 'info');
-                const member = await memberstack.getCurrentMember();
+                const member = await window.memberstack.getCurrentMember();
                 
                 if (member) {
                     log('✅ Active session found', 'success');
@@ -276,8 +277,8 @@
             }
             
             try {
-                log('Calling memberstack.signOut()...', 'info');
-                await memberstack.signOut();
+                log('Calling memberstack.logout()...', 'info');
+                await window.memberstack.logout();
                 
                 log('✅ Signed out successfully', 'success');
                 
