@@ -2,9 +2,8 @@
 // This file contains the public configuration for Memberstack
 
 window.MEMBERSTACK_CONFIG = {
-    // Replace with your actual Memberstack public key
-    // You can find this in your Memberstack dashboard under Settings > API Keys
-    publicKey: 'pk_sb_YOUR_PUBLIC_KEY_HERE',
+    // Memberstack public key
+    publicKey: 'pk_4f1166cfc3dc4380712e',
     
     // Optional: Custom login redirect
     loginRedirect: '/index.html',
