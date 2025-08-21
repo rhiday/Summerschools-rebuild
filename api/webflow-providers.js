@@ -1,9 +1,20 @@
 // Vercel Serverless Function for Webflow Provider CMS Integration (API v2)
-// This handles all CRUD operations for providers in Webflow CMS
+// This handles all CRUD operations for providers in Webflow CMS including image uploads
+
+const multiparty = require('multiparty');
+const { processFormFileUpload } = require('./webflow-asset-upload.js');
+const fs = require('fs');
 
 const WEBFLOW_API_TOKEN = process.env.WEBFLOW_API_TOKEN;
 const PROVIDER_COLLECTION_ID = process.env.WEBFLOW_PROVIDER_COLLECTION_ID || '672bbb0fffd67079e532dfb1';
 const SITE_ID = process.env.WEBFLOW_SITE_ID;
+
+// Disable body parser for multipart form data
+module.exports.config = {
+    api: {
+        bodyParser: false,
+    },
+};
 
 // Validate required environment variables
 if (!WEBFLOW_API_TOKEN) {
@@ -14,8 +25,9 @@ if (!SITE_ID) {
 }
 
 // Helper function to format provider data for Webflow
-function formatProviderForWebflow(providerData) {
+function formatProviderForWebflow(providerData, uploadedAssets = {}) {
     console.log('Input providerData:', providerData);
+    console.log('Uploaded assets:', uploadedAssets);
     
     // Generate a URL-safe slug
     const generateSlug = (name) => {
@@ -49,6 +61,11 @@ function formatProviderForWebflow(providerData) {
             'age-range': providerData['Age-Range'] || providerData.ageRange || '',
             'fees-2': providerData['Fees-from'] || providerData.feesFrom || '',
             
+            // Image fields (using uploaded asset URLs)
+            'provider-logo': uploadedAssets['Profile-Image']?.assetUrl || null,
+            'image': uploadedAssets['Profile-Image']?.assetUrl || null, // Main provider image
+            'gallery': uploadedAssets['Gallary-Images'] ? [uploadedAssets['Gallary-Images'].assetUrl] : [],
+            
             // Additional fields
             orders: 0, // Default order
             'no-index': false // Default SEO setting
@@ -60,8 +77,63 @@ function formatProviderForWebflow(providerData) {
     return webflowItem;
 }
 
+// Parse multipart form data
+async function parseMultipartForm(req) {
+    return new Promise((resolve, reject) => {
+        const form = new multiparty.Form();
+        form.parse(req, (err, fields, files) => {
+            if (err) {
+                reject(err);
+                return;
+            }
+            
+            // Flatten fields (multiparty returns arrays)
+            const flattenedFields = {};
+            Object.keys(fields).forEach(key => {
+                flattenedFields[key] = fields[key][0]; // Take first value
+            });
+            
+            resolve({ fields: flattenedFields, files });
+        });
+    });
+}
+
+// Process file uploads to Webflow
+async function processFileUploads(files) {
+    const uploadedAssets = {};
+    
+    for (const [fieldName, fileArray] of Object.entries(files)) {
+        if (fileArray && fileArray.length > 0) {
+            const file = fileArray[0]; // Take first file
+            console.log(`Processing file upload for ${fieldName}:`, file.originalFilename);
+            
+            try {
+                // Create a File-like object for our upload function
+                const fileBuffer = fs.readFileSync(file.path);
+                const fileObj = {
+                    name: file.originalFilename,
+                    arrayBuffer: async () => fileBuffer
+                };
+                
+                const uploadResult = await processFormFileUpload(fileObj, SITE_ID, WEBFLOW_API_TOKEN);
+                
+                if (uploadResult.success) {
+                    uploadedAssets[fieldName] = uploadResult;
+                    console.log(`Successfully uploaded ${fieldName}:`, uploadResult.assetUrl);
+                } else {
+                    console.error(`Failed to upload ${fieldName}:`, uploadResult.error);
+                }
+            } catch (error) {
+                console.error(`Error processing ${fieldName}:`, error);
+            }
+        }
+    }
+    
+    return uploadedAssets;
+}
+
 // Main handler function
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
     // Enable CORS
     res.setHeader('Access-Control-Allow-Credentials', true);
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -76,20 +148,46 @@ export default async function handler(req, res) {
         return;
     }
 
-    const { action, providerId, ...providerData } = req.body || {};
+    let action, providerId, providerData;
+    let uploadedAssets = {};
 
     try {
+        // Check if request is multipart form data (file uploads)
+        const contentType = req.headers['content-type'] || '';
+        
+        if (contentType.includes('multipart/form-data')) {
+            console.log('Processing multipart form data with file uploads');
+            const { fields, files } = await parseMultipartForm(req);
+            
+            // Extract action and providerId from fields
+            action = fields.action || req.method;
+            providerId = fields.providerId;
+            providerData = fields;
+            
+            // Process file uploads
+            uploadedAssets = await processFileUploads(files);
+            
+        } else {
+            // Regular JSON request
+            console.log('Processing regular JSON request');
+            const body = req.body || {};
+            action = body.action || req.method;
+            providerId = body.providerId;
+            providerData = body;
+        }
+
         let response;
         let result;
 
-        switch (action || req.method) {
+        switch (action) {
             case 'CREATE':
             case 'POST':
                 try {
                     console.log('Creating provider with data:', providerData);
+                    console.log('Uploaded assets:', uploadedAssets);
                     
-                    // Create new provider
-                    const newProvider = formatProviderForWebflow(providerData);
+                    // Create new provider with uploaded assets
+                    const newProvider = formatProviderForWebflow(providerData, uploadedAssets);
                     console.log('Sending to Webflow:', JSON.stringify(newProvider, null, 2));
                     
                     response = await fetch(`https://api.webflow.com/v2/collections/${PROVIDER_COLLECTION_ID}/items`, {

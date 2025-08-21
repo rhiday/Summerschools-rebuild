@@ -231,16 +231,16 @@ class WebflowProviderSync {
             originalProviderForm.addEventListener('submit', async (e) => {
                 e.preventDefault(); // Prevent default form submission
                 
-                // Get form data
+                // Get form data (keep as FormData for file uploads)
                 const formData = new FormData(originalProviderForm);
-                const providerData = {};
                 
-                // Convert FormData to regular object
-                for (let [key, value] of formData.entries()) {
-                    providerData[key] = value;
+                // Add action to FormData
+                formData.append('action', this.currentEditingId ? 'UPDATE' : 'CREATE');
+                if (this.currentEditingId) {
+                    formData.append('providerId', this.currentEditingId);
                 }
 
-                console.log('Provider data being submitted:', providerData);
+                console.log('Provider form being submitted with files');
 
                 try {
                     // Show loading state
@@ -250,15 +250,20 @@ class WebflowProviderSync {
                         submitBtn.textContent = 'Submitting...';
                     }
 
-                    let result;
-                    if (this.currentEditingId) {
-                        // Update existing provider
-                        result = await this.updateProvider(this.currentEditingId, providerData);
-                        this.currentEditingId = null;
-                    } else {
-                        // Create new provider
-                        result = await this.createProvider(providerData);
+                    // Submit form data with files
+                    const response = await fetch(this.apiEndpoint, {
+                        method: 'POST',
+                        body: formData // Don't set Content-Type header, let browser set it
+                    });
+
+                    const result = await response.json();
+                    
+                    if (!result.success) {
+                        throw new Error(result.message || 'Failed to save provider');
                     }
+                    
+                    // Clear editing state
+                    this.currentEditingId = null;
                     
                     console.log('Provider submission successful:', result);
                     
