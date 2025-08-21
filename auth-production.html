@@ -7,13 +7,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&family=Domine:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="fonts.css">
     
-    <!-- PRODUCTION-READY AUTHENTICATION WITH SAFETY -->
-    <script src="js/production-safety.js"></script>
+    <!-- ENVIRONMENT-AWARE AUTHENTICATION -->
     <script src="js/auth-environment.js"></script>
-    <script src="test-production-readiness.js"></script>
     
     <style>
-        /* Design Variables - Matching main application */
+        /* Same styles as auth.html - copy from original */
         :root {
             --primary-color: #FF6A3C;
             --secondary-color: #182236;
@@ -137,23 +135,6 @@
             border-top: 1px solid var(--border-color);
         }
 
-        .auth-switch p {
-            font-family: var(--font-paragraphs);
-            color: rgb(73, 73, 73);
-            margin-bottom: var(--spacing-sm);
-        }
-
-        .auth-switch a {
-            color: var(--primary-color);
-            font-weight: 600;
-            text-decoration: none;
-        }
-
-        .auth-switch a:hover {
-            color: #E55A32;
-            text-decoration: underline;
-        }
-
         .status {
             padding: 10px;
             margin: 10px 0;
@@ -173,6 +154,25 @@
             border: 1px solid #c3e6cb;
         }
 
+        .env-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .env-prod {
+            background: #28a745;
+            color: white;
+        }
+
+        .env-dev {
+            background: orange;
+            color: white;
+        }
+
         .hidden {
             display: none;
         }
@@ -180,12 +180,13 @@
 </head>
 <body>
     <div class="auth-container">
+        <div id="env-indicator" class="env-indicator"></div>
+        
         <div class="auth-header">
             <h1>Welcome Back</h1>
             <p>Sign in to access your course dashboard</p>
         </div>
         
-        <!-- SIMPLE MANUAL MEMBERSTACK LOGIN -->
         <div id="login-status" style="display: none; padding: 10px; margin: 10px 0; border-radius: 5px;"></div>
         
         <form id="loginForm">
@@ -209,7 +210,6 @@
     </div>
 
     <script>
-        // ENHANCED AUTHENTICATION WITH FALLBACK SUPPORT
         let isSigningIn = false;
 
         function showStatus(message, type = 'info') {
@@ -217,39 +217,61 @@
             statusDiv.style.display = 'block';
             statusDiv.textContent = message;
             
-            if (type === 'error') {
-                statusDiv.style.backgroundColor = '#f8d7da';
-                statusDiv.style.color = '#721c24';
-                statusDiv.style.border = '1px solid #f5c6cb';
-            } else if (type === 'success') {
-                statusDiv.style.backgroundColor = '#d4edda';
-                statusDiv.style.color = '#155724';
-                statusDiv.style.border = '1px solid #c3e6cb';
-            } else {
-                statusDiv.style.backgroundColor = '#d1ecf1';
-                statusDiv.style.color = '#0c5460';
-                statusDiv.style.border = '1px solid #bee5eb';
-            }
+            statusDiv.className = 'status ' + type;
         }
 
         function hideStatus() {
             document.getElementById('login-status').style.display = 'none';
         }
 
-        // Initialize production-ready authentication
+        function showEnvironmentIndicator() {
+            const indicator = document.getElementById('env-indicator');
+            const envInfo = window.environmentAuth.getEnvironmentInfo();
+            
+            if (envInfo.isProduction) {
+                indicator.textContent = '🚀 PROD';
+                indicator.className = 'env-indicator env-prod';
+            } else {
+                indicator.textContent = '🔧 DEV';
+                indicator.className = 'env-indicator env-dev';
+            }
+        }
+
+        function showDevHints() {
+            const envInfo = window.environmentAuth.getEnvironmentInfo();
+            if (!envInfo.isProduction) {
+                const container = document.querySelector('.auth-container');
+                const hintsDiv = document.createElement('div');
+                hintsDiv.innerHTML = `
+                    <div style="margin-top: 20px; padding: 15px; background: #e3f2fd; border-radius: 8px; font-size: 14px;">
+                        <strong>🔧 Development Mode</strong><br>
+                        Try these test accounts:<br>
+                        • shahriar.rhiday@gmail.com / password123<br>
+                        • provider@test.com / password123<br>
+                        • admin@test.com / password123
+                    </div>
+                `;
+                container.appendChild(hintsDiv);
+            }
+        }
+
+        // Initialize when environment auth is ready
         window.addEventListener('load', function() {
-            console.log('🔄 Initializing production-ready authentication...');
+            console.log('🔄 Waiting for environment auth...');
             
             function waitForAuth() {
                 if (window.environmentAuth) {
                     window.environmentAuth.on('onReady', function() {
-                        console.log('✅ Production auth ready');
+                        console.log('✅ Environment auth ready');
+                        
+                        showEnvironmentIndicator();
                         
                         // Check if already logged in
                         const currentUser = window.environmentAuth.getCurrentUser();
                         if (currentUser) {
-                            console.log('✅ Already logged in:', currentUser.email);
-                            showStatus(`Already signed in as ${currentUser.email}. Redirecting...`, 'success');
+                            const envInfo = window.environmentAuth.getEnvironmentInfo();
+                            console.log('✅ Already logged in:', currentUser.email, 'Environment:', envInfo.isProduction ? 'PROD' : 'DEV');
+                            showStatus(`Already signed in as ${currentUser.email} (${currentUser.source}). Redirecting...`, 'success');
                             setTimeout(() => {
                                 window.location.href = '/index.html';
                             }, 1500);
@@ -267,23 +289,7 @@
             waitForAuth();
         });
 
-        function showDevHints() {
-            // Add development hints below the form
-            const container = document.querySelector('.auth-container');
-            const hintsDiv = document.createElement('div');
-            hintsDiv.innerHTML = `
-                <div style="margin-top: 20px; padding: 15px; background: #e3f2fd; border-radius: 8px; font-size: 14px;">
-                    <strong>🔧 Development Mode</strong><br>
-                    Try these test accounts:<br>
-                    • shahriar.rhiday@gmail.com / password123<br>
-                    • provider@test.com / password123<br>
-                    • admin@test.com / password123
-                </div>
-            `;
-            container.appendChild(hintsDiv);
-        }
-
-        // Handle form submission with AuthManager
+        // Handle form submission
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('loginForm');
             const signInBtn = document.getElementById('signInBtn');
@@ -297,37 +303,29 @@
                 const email = document.getElementById('email').value;
                 const password = document.getElementById('password').value;
                 
-                console.log('🔐 Attempting login for:', email);
-                
                 // Update button
                 signInBtn.disabled = true;
                 signInBtn.textContent = 'Signing In...';
                 showStatus('Signing in...', 'info');
                 
                 try {
-                    console.log('🔐 Attempting authentication for:', email);
-                    
-                    // Use environment-aware auth system
                     const result = await window.environmentAuth.signIn(email, password);
+                    const envInfo = window.environmentAuth.getEnvironmentInfo();
                     
-                    if (result && (result.success || result.data)) {
-                        const envInfo = window.environmentAuth.getEnvironmentInfo();
-                        const authType = envInfo.isProduction ? 'production' : 'development';
-                        
-                        console.log('✅ Login successful:', email, 'Type:', authType);
-                        showStatus(`Sign in successful! (${authType}) Redirecting...`, 'success');
+                    if (result && (result.data || result.success)) {
+                        const source = envInfo.isProduction ? 'memberstack' : 'local';
+                        showStatus(`Sign in successful! (${source}) Redirecting...`, 'success');
                         setTimeout(() => {
                             window.location.href = '/index.html';
                         }, 1500);
                     } else {
-                        throw new Error('Authentication failed');
+                        throw new Error('Invalid login response');
                     }
                     
                 } catch (error) {
                     console.error('❌ Sign in error:', error);
                     showStatus(error.message || 'Sign in failed. Please check your credentials.', 'error');
                 } finally {
-                    // Reset button
                     signInBtn.disabled = false;
                     signInBtn.textContent = 'Sign In';
                     isSigningIn = false;

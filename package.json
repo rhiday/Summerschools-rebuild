@@ -7,7 +7,12 @@
     "start": "python3 -m http.server 8000",
     "dev": "vercel dev --listen 3000",
     "deploy": "vercel --prod",
-    "test": "echo \"No tests configured\""
+    "deploy:preview": "vercel",
+    "switch:production": "cp auth-production.html auth.html && echo 'Switched to production auth'",
+    "switch:development": "git checkout auth.html && echo 'Switched to development auth'",
+    "test": "echo \"No tests configured\"",
+    "env:check": "vercel env ls",
+    "logs": "vercel logs"
   },
   "repository": {
     "type": "git",

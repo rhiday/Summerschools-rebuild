@@ -9,10 +9,28 @@
     <link rel="stylesheet" href="fonts.css">
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-    <!-- Memberstack DOM Package - CORRECT APP ID -->
-    <script src="https://static.memberstack.com/scripts/v1/memberstack-dom.js" data-memberstack-app="app_cm42ruz6100e40st17ebveb3p"></script>
-    <!-- Enhanced Auth Manager -->
-    <script src="js/auth-manager.js"></script>
+    <!-- LOCAL DEVELOPMENT AUTH - MEMBERSTACK CDN BLOCKED -->
+    <script>
+        // Local Authentication System (same as auth.html)
+        window.localAuth = {
+            getCurrentUser: function() {
+                try {
+                    const stored = localStorage.getItem('localAuthUser');
+                    return stored ? JSON.parse(stored) : null;
+                } catch (error) {
+                    localStorage.removeItem('localAuthUser');
+                    return null;
+                }
+            },
+            
+            signOut: function() {
+                localStorage.removeItem('localAuthUser');
+                return { success: true };
+            }
+        };
+        
+        console.log('✅ Local auth system ready for dashboard');
+    </script>
     <!-- Webflow CMS Sync -->
     <script src="js/webflow-sync.js" defer></script>
     <script src="js/webflow-provider-sync.js" defer></script>
@@ -2156,108 +2174,69 @@
             dropdown.classList.toggle('show');
         }
 
-        // ENHANCED AUTHENTICATION FUNCTIONS
+        // LOCAL AUTHENTICATION FUNCTIONS
         function signOut() {
-            if (window.authManager) {
-                window.authManager.signOut().then(() => {
-                    window.location.href = 'auth.html';
-                }).catch(error => {
-                    console.error('Sign out error:', error);
-                    window.location.href = 'auth.html';
-                });
-            } else {
-                window.location.href = 'auth.html';
-            }
+            console.log('🔓 Signing out...');
+            window.localAuth.signOut();
+            window.location.href = 'auth.html';
         }
 
         function initializeUserInterface() {
             console.log('🔄 Initializing user interface...');
             
-            // Use enhanced AuthManager with robust loading
-            if (window.authManager) {
-                console.log('✅ AuthManager found');
+            // Use local authentication
+            const currentUser = window.localAuth.getCurrentUser();
+            
+            if (currentUser) {
+                console.log('✅ User authenticated:', currentUser);
                 
-                window.authManager.on('onReady', function() {
-                    console.log('✅ AuthManager ready');
+                // Update user display
+                const displayName = currentUser.data?.name || currentUser.email?.split('@')[0] || 'User';
+                const userRole = currentUser.role || 'Provider';
+                
+                // Update DOM elements
+                const userNameEl = document.getElementById('user-name');
+                const userEmailEl = document.getElementById('user-email');
+                const userRoleEl = document.getElementById('user-role');
+                const userAvatarEl = document.getElementById('user-avatar');
+                
+                if (userNameEl) userNameEl.textContent = displayName;
+                if (userEmailEl) userEmailEl.textContent = currentUser.email || '';
+                if (userRoleEl) userRoleEl.textContent = userRole;
+                
+                // Simple avatar initials
+                if (userAvatarEl) {
+                    const initials = displayName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                    userAvatarEl.innerHTML = `<span>${initials}</span>`;
+                }
+                
+                // Store for provider sync
+                window.currentMember = {
+                    id: currentUser.id,
+                    memberId: currentUser.id,
+                    email: currentUser.email,
+                    name: displayName,
+                    role: userRole,
+                    source: currentUser.source
+                };
+                
+                console.log('✅ User interface initialized:', window.currentMember);
+                
+                // Add development mode indicator
+                if (currentUser.source === 'local') {
+                    console.log('🔧 Development mode - using local authentication');
+                    const devIndicator = document.createElement('div');
+                    devIndicator.innerHTML = '<small style="color: orange; font-size: 11px;">🔧 Dev Mode</small>';
+                    devIndicator.style.textAlign = 'center';
+                    devIndicator.style.marginTop = '5px';
                     
-                    // Check authentication
-                    if (window.authManager.isAuthenticated()) {
-                        const currentUser = window.authManager.getCurrentUser();
-                        console.log('✅ User authenticated:', currentUser);
-                        
-                        // Update user display
-                        const userData = currentUser.data;
-                        const displayName = userData?.customFields?.name || currentUser.email?.split('@')[0] || 'User';
-                        const userRole = userData?.customFields?.role || currentUser.role || 'Provider';
-                        
-                        // Update DOM elements
-                        const userNameEl = document.getElementById('user-name');
-                        const userEmailEl = document.getElementById('user-email');
-                        const userRoleEl = document.getElementById('user-role');
-                        const userAvatarEl = document.getElementById('user-avatar');
-                        
-                        if (userNameEl) userNameEl.textContent = displayName;
-                        if (userEmailEl) userEmailEl.textContent = currentUser.email || '';
-                        if (userRoleEl) userRoleEl.textContent = userRole;
-                        
-                        // Simple avatar initials
-                        if (userAvatarEl) {
-                            const initials = displayName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-                            userAvatarEl.innerHTML = `<span>${initials}</span>`;
-                        }
-                        
-                        // Store for provider sync
-                        window.currentMember = {
-                            id: currentUser.id,
-                            memberId: currentUser.id,
-                            email: currentUser.email,
-                            name: displayName,
-                            role: userRole,
-                            source: currentUser.source
-                        };
-                        
-                        console.log('✅ User interface initialized:', window.currentMember);
-                        
-                        // Add auth source indicator for development
-                        if (currentUser.source === 'local') {
-                            console.log('🔧 Development mode - using local authentication');
-                            const devIndicator = document.createElement('div');
-                            devIndicator.innerHTML = '<small style="color: orange; font-size: 11px;">🔧 Dev Mode</small>';
-                            devIndicator.style.textAlign = 'center';
-                            devIndicator.style.marginTop = '5px';
-                            
-                            const userMenu = document.querySelector('.user-info');
-                            if (userMenu) userMenu.appendChild(devIndicator);
-                        }
-                        
-                    } else {
-                        console.log('❌ No authenticated user, redirecting...');
-                        window.location.href = 'auth.html';
-                    }
-                });
-                
-                // If AuthManager is already ready, trigger manually
-                setTimeout(() => {
-                    if (window.authManager.isAuthenticated()) {
-                        window.authManager.triggerCallbacks('onReady');
-                    }
-                }, 100);
+                    const userMenu = document.querySelector('.user-info');
+                    if (userMenu) userMenu.appendChild(devIndicator);
+                }
                 
             } else {
-                console.warn('⏳ AuthManager not loaded yet, retrying...');
-                let retryCount = 0;
-                const retryInit = () => {
-                    retryCount++;
-                    if (window.authManager) {
-                        initializeUserInterface();
-                    } else if (retryCount < 10) {
-                        setTimeout(retryInit, 500);
-                    } else {
-                        console.error('❌ AuthManager failed to load after 10 attempts');
-                        window.location.href = 'auth.html';
-                    }
-                };
-                setTimeout(retryInit, 500);
+                console.log('❌ No authenticated user, redirecting...');
+                window.location.href = 'auth.html';
             }
         }
 
