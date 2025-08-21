@@ -14,8 +14,32 @@ class WebflowSync {
         try {
             await this.loadCourses();
             this.setupEventListeners();
+            this.startStatusPolling(); // Check for status updates
         } catch (error) {
             console.error('Failed to initialize Webflow sync:', error);
+        }
+    }
+
+    // Poll for status changes every 30 seconds
+    startStatusPolling() {
+        setInterval(async () => {
+            try {
+                await this.loadCourses();
+            } catch (error) {
+                console.log('Status polling error:', error);
+            }
+        }, 30000); // 30 seconds
+    }
+
+    // Manual refresh function for user-triggered updates
+    async refreshCourses() {
+        try {
+            console.log('Refreshing courses...');
+            await this.loadCourses();
+            return true;
+        } catch (error) {
+            console.error('Failed to refresh courses:', error);
+            return false;
         }
     }
 
@@ -34,29 +58,50 @@ class WebflowSync {
         }
     }
 
-    // Update local course display with Webflow data
+    // Update local course display with Webflow data (API v2 format)
     updateLocalCourses() {
         // Map Webflow courses to local format
-        const localCourses = this.courses.map(item => ({
-            id: item._id,
-            webflowId: item._id,
-            title: item.fields.name,
-            description: item.fields['course-description'] || '',
-            price: `£${item.fields['course-fee'] || 0}`,
-            duration: item.fields['course-duration'] || '',
-            dates: `${this.formatDate(item.fields['start-date'])} - ${this.formatDate(item.fields['end-date'])}`,
-            status: item.fields._draft ? 'Draft' : 'Published',
-            emoji: '📚', // Default emoji
-            archived: item.fields._archived || false,
-            location: item.fields.location,
-            ageRange: item.fields['age-range'],
-            provider: item.fields['provider-name']
-        }));
+        const localCourses = this.courses.map(item => {
+            const fieldData = item.fieldData || {};
+            
+            return {
+                id: item.id || item._id,
+                webflowId: item.id || item._id,
+                title: fieldData.name || 'Untitled Course',
+                description: fieldData.description || fieldData.summary || '',
+                price: fieldData.fees ? `£${fieldData.fees}` : '£0',
+                duration: fieldData.duration || '',
+                dates: fieldData.dates || '',
+                // Map Webflow status to display status
+                status: item.isDraft ? 'In Review' : 'Published',
+                emoji: '📚', // Default emoji
+                archived: fieldData._archived || false,
+                location: fieldData.destination || '',
+                ageRange: fieldData.age || `${fieldData['minimum-age'] || 13}-${fieldData['maximum-age'] || 18}`,
+                provider: fieldData.provider || '',
+                // Add additional fields for debugging
+                isDraft: item.isDraft,
+                lastUpdated: item.lastUpdated,
+                lastPublished: item.lastPublished
+            };
+        });
 
         // Update the courses array in the main application
         if (window.courses) {
+            // Include both draft and published courses (not archived)
             window.courses = localCourses.filter(c => !c.archived);
             window.archivedCourses = localCourses.filter(c => c.archived);
+            
+            // Separate by status for better organization
+            window.draftCourses = localCourses.filter(c => !c.archived && c.isDraft);
+            window.publishedCourses = localCourses.filter(c => !c.archived && !c.isDraft);
+            
+            console.log('Courses loaded:', {
+                total: localCourses.length,
+                draft: window.draftCourses.length,
+                published: window.publishedCourses.length,
+                archived: window.archivedCourses.length
+            });
             
             // Re-render courses
             if (window.renderActiveCourses) window.renderActiveCourses();
@@ -425,6 +470,34 @@ class WebflowSync {
                 submitBtn.textContent = 'Submit Application';
             }
         };
+    }
+}
+
+// Refresh course status function
+async function refreshCourseStatus() {
+    const refreshBtn = document.getElementById('refresh-btn');
+    refreshBtn.disabled = true;
+    refreshBtn.textContent = '🔄 Refreshing...';
+    
+    try {
+        if (window.webflowSync) {
+            const success = await window.webflowSync.refreshCourses();
+            if (success) {
+                refreshBtn.textContent = '✅ Updated';
+                setTimeout(() => {
+                    refreshBtn.textContent = '🔄 Refresh Status';
+                    refreshBtn.disabled = false;
+                }, 2000);
+            } else {
+                throw new Error('Refresh failed');
+            }
+        }
+    } catch (error) {
+        refreshBtn.textContent = '❌ Error';
+        setTimeout(() => {
+            refreshBtn.textContent = '🔄 Refresh Status';
+            refreshBtn.disabled = false;
+        }, 2000);
     }
 }
 

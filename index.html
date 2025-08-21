@@ -278,6 +278,34 @@
             margin-top: var(--spacing-xl);
         }
 
+        /* Dashboard Header */
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-xl);
+            padding-bottom: var(--spacing-lg);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .dashboard-title {
+            color: var(--text-color);
+            font-size: 2rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        #refresh-btn {
+            font-size: 0.875rem;
+            padding: 8px 16px;
+            transition: all 0.3s ease;
+        }
+
+        #refresh-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
         .course-card {
             background: var(--white);
             border-radius: var(--border-radius-lg);
@@ -1021,6 +1049,9 @@
             <div id="dashboard-view">
                 <div class="dashboard-header">
                     <h1 class="dashboard-title">Course Dashboard</h1>
+                    <button class="btn btn-secondary" onclick="refreshCourseStatus()" id="refresh-btn">
+                        🔄 Refresh Status
+                    </button>
                 </div>
 
                 <div class="course-grid" id="active-courses">
