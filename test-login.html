@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Memberstack Login</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .test-credentials {
+            background: #f0f8ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border: 1px solid #4169e1;
+        }
+        .test-credentials code {
+            background: #fff;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover {
+            background: #5a67d8;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        #console {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+            border-left: 3px solid transparent;
+        }
+        .log-entry.info {
+            border-left-color: #4fc3f7;
+            color: #4fc3f7;
+        }
+        .log-entry.success {
+            border-left-color: #66bb6a;
+            color: #66bb6a;
+        }
+        .log-entry.error {
+            border-left-color: #ef5350;
+            color: #ef5350;
+        }
+        .log-entry.warning {
+            border-left-color: #ffa726;
+            color: #ffa726;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Test Memberstack Login</h1>
+        
+        <div class="test-credentials">
+            <strong>Test Credentials:</strong><br>
+            Email: <code>shahriar.rhiday@gmail.com</code><br>
+            Password: <code>JoyBanglaLol71!</code>
+        </div>
+        
+        <div>
+            <button onclick="testInitialization()">1. Test Initialization</button>
+            <button onclick="testLogin()">2. Test Login</button>
+            <button onclick="checkSession()">3. Check Session</button>
+            <button onclick="testLogout()">4. Test Logout</button>
+            <button onclick="clearConsole()">Clear Console</button>
+        </div>
+        
+        <div id="console"></div>
+    </div>
+
+    <!-- Memberstack DOM Package -->
+    <script src="https://static.memberstack.com/scripts/v1/memberstack-dom.js" data-memberstack-app="pk_4f1166cfc3dc4380712e"></script>
+    
+    <script>
+        let memberstack = null;
+        const testEmail = 'shahriar.rhiday@gmail.com';
+        const testPassword = 'JoyBanglaLol71!';
+        
+        function log(message, type = 'info') {
+            const console = document.getElementById('console');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            const timestamp = new Date().toLocaleTimeString();
+            entry.textContent = `[${timestamp}] ${message}`;
+            console.appendChild(entry);
+            console.scrollTop = console.scrollHeight;
+            
+            // Also log to browser console
+            if (type === 'error') {
+                console.error(message);
+            } else if (type === 'warning') {
+                console.warn(message);
+            } else {
+                console.log(message);
+            }
+        }
+        
+        function clearConsole() {
+            document.getElementById('console').innerHTML = '';
+            log('Console cleared', 'info');
+        }
+        
+        async function testInitialization() {
+            log('Starting Memberstack initialization test...', 'info');
+            
+            try {
+                // Check if Memberstack library is loaded
+                if (typeof window.MemberStack === 'undefined') {
+                    log('❌ MemberStack is not defined', 'error');
+                    log('Waiting 2 seconds and retrying...', 'warning');
+                    
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    
+                    if (typeof window.MemberStack === 'undefined') {
+                        log('❌ MemberStack still not available', 'error');
+                        return;
+                    }
+                }
+                
+                log('✅ MemberStack library is loaded', 'success');
+                
+                // Initialize Memberstack
+                log('Initializing Memberstack with public key...', 'info');
+                memberstack = window.MemberStack.init({
+                    publicKey: 'pk_4f1166cfc3dc4380712e'
+                });
+                
+                log('✅ Memberstack initialized successfully', 'success');
+                log('Memberstack instance: ' + JSON.stringify(memberstack ? 'Created' : 'Failed'), 'info');
+                
+                // Store globally for other tests
+                window.$memberstackDom = memberstack;
+                
+            } catch (error) {
+                log('❌ Initialization error: ' + error.message, 'error');
+                log('Stack trace: ' + error.stack, 'error');
+            }
+        }
+        
+        async function testLogin() {
+            log('Starting login test...', 'info');
+            
+            if (!memberstack) {
+                log('⚠️ Memberstack not initialized, attempting initialization...', 'warning');
+                await testInitialization();
+                if (!memberstack) {
+                    log('❌ Failed to initialize Memberstack', 'error');
+                    return;
+                }
+            }
+            
+            try {
+                log(`Attempting login with: ${testEmail}`, 'info');
+                log('Calling memberstack.signIn()...', 'info');
+                
+                const response = await memberstack.signIn({
+                    email: testEmail,
+                    password: testPassword
+                });
+                
+                log('✅ Login response received', 'success');
+                log('Response: ' + JSON.stringify(response, null, 2), 'info');
+                
+                if (response && response.data) {
+                    log('✅ Login successful!', 'success');
+                    log('Member ID: ' + response.data.id, 'success');
+                    log('Email: ' + (response.data.auth?.email || response.data.email), 'success');
+                    
+                    // Save to localStorage for testing
+                    const sessionData = {
+                        id: response.data.id,
+                        memberId: response.data.id,
+                        email: response.data.auth?.email || response.data.email,
+                        signedInAt: new Date().toISOString()
+                    };
+                    localStorage.setItem('currentUser', JSON.stringify(sessionData));
+                    log('Session saved to localStorage', 'success');
+                } else {
+                    log('⚠️ Unexpected response structure', 'warning');
+                }
+                
+            } catch (error) {
+                log('❌ Login error: ' + error.message, 'error');
+                if (error.response) {
+                    log('Error response: ' + JSON.stringify(error.response), 'error');
+                }
+                if (error.stack) {
+                    log('Stack trace: ' + error.stack, 'error');
+                }
+            }
+        }
+        
+        async function checkSession() {
+            log('Checking current session...', 'info');
+            
+            if (!memberstack) {
+                log('⚠️ Memberstack not initialized', 'warning');
+                return;
+            }
+            
+            try {
+                log('Calling memberstack.getCurrentMember()...', 'info');
+                const member = await memberstack.getCurrentMember();
+                
+                if (member) {
+                    log('✅ Active session found', 'success');
+                    log('Member: ' + JSON.stringify(member, null, 2), 'info');
+                } else {
+                    log('ℹ️ No active session', 'info');
+                }
+                
+                // Check localStorage
+                const localSession = localStorage.getItem('currentUser');
+                if (localSession) {
+                    log('LocalStorage session: ' + localSession, 'info');
+                } else {
+                    log('No localStorage session', 'info');
+                }
+                
+            } catch (error) {
+                log('❌ Session check error: ' + error.message, 'error');
+            }
+        }
+        
+        async function testLogout() {
+            log('Testing logout...', 'info');
+            
+            if (!memberstack) {
+                log('⚠️ Memberstack not initialized', 'warning');
+                return;
+            }
+            
+            try {
+                log('Calling memberstack.signOut()...', 'info');
+                await memberstack.signOut();
+                
+                log('✅ Signed out successfully', 'success');
+                
+                // Clear localStorage
+                localStorage.removeItem('currentUser');
+                log('LocalStorage cleared', 'success');
+                
+            } catch (error) {
+                log('❌ Logout error: ' + error.message, 'error');
+            }
+        }
+        
+        // Auto-initialize on load
+        window.addEventListener('load', () => {
+            log('Page loaded, waiting for Memberstack...', 'info');
+            setTimeout(() => {
+                testInitialization();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

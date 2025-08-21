@@ -6,28 +6,8 @@ class AuthService {
         this.memberstack = null;
         this.currentUser = null;
         this.isInitialized = false;
-        
-        // Mock users for fallback (will be removed once Memberstack is connected)
-        this.mockUsers = [
-            {
-                id: 'user_1',
-                memberId: 'mem_12345',
-                email: 'provider@test.com',
-                password: 'password123',
-                name: 'Test Provider',
-                role: 'provider',
-                createdAt: new Date().toISOString()
-            },
-            {
-                id: 'user_2',
-                memberId: 'mem_67890',
-                email: 'admin@test.com',
-                password: 'password123',
-                name: 'Platform Admin',
-                role: 'admin',
-                createdAt: new Date().toISOString()
-            }
-        ];
+        this.initializationAttempts = 0;
+        this.maxAttempts = 10;
         
         this.initializeMemberstack();
         this.loadCurrentUser();
@@ -36,22 +16,30 @@ class AuthService {
     // Initialize Memberstack
     async initializeMemberstack() {
         try {
+            this.initializationAttempts++;
+            
             // Wait for Memberstack DOM instance to be available
             if (typeof window !== 'undefined' && window.$memberstackDom) {
                 this.memberstack = window.$memberstackDom;
                 this.isInitialized = true;
-                console.log('Memberstack initialized successfully');
+                console.log('✅ Memberstack initialized successfully');
                 
                 // Check if user is already signed in
                 await this.checkExistingSession();
             } else if (typeof window !== 'undefined' && window.MemberStack) {
                 // Try to initialize if not already done
                 console.log('Initializing Memberstack DOM...');
-                // The public key should be set in memberstack-config.js
+                window.$memberstackDom = window.MemberStack.init({
+                    publicKey: 'pk_4f1166cfc3dc4380712e'
+                });
+                setTimeout(() => this.initializeMemberstack(), 500);
+            } else if (this.initializationAttempts < this.maxAttempts) {
+                // Retry after a short delay
+                console.log(`Waiting for Memberstack... (attempt ${this.initializationAttempts}/${this.maxAttempts})`);
                 setTimeout(() => this.initializeMemberstack(), 500);
             } else {
-                // Retry after a short delay
-                setTimeout(() => this.initializeMemberstack(), 500);
+                console.error('❌ Failed to initialize Memberstack after maximum attempts');
+                this.isInitialized = false;
             }
         } catch (error) {
             console.error('Failed to initialize Memberstack:', error);
@@ -96,69 +84,77 @@ class AuthService {
         localStorage.setItem('currentUser', JSON.stringify(user));
     }
 
-    // Sign in with email and password (Memberstack + fallback)
+    // Sign in with email and password (Memberstack only)
     async signIn(email, password) {
         try {
-            // Try Memberstack first
-            if (this.isInitialized && this.memberstack) {
-                try {
-                    const member = await this.memberstack.signIn({
-                        email: email,
-                        password: password
-                    });
+            // Wait for Memberstack to initialize if needed
+            let waitCount = 0;
+            while (!this.isInitialized && waitCount < 10) {
+                console.log('Waiting for Memberstack to initialize...');
+                await new Promise(resolve => setTimeout(resolve, 500));
+                waitCount++;
+            }
+            
+            if (!this.isInitialized || !this.memberstack) {
+                throw new Error('Memberstack is not initialized. Please refresh the page and try again.');
+            }
+            
+            console.log('🔐 Attempting Memberstack sign in for:', email);
+            
+            try {
+                const response = await this.memberstack.signIn({
+                    email: email,
+                    password: password
+                });
+                
+                console.log('Memberstack sign in response:', response);
+                
+                // Extract member data from response
+                const member = response.data || response.member || response;
+                
+                if (member && member.id) {
+                    const sessionUser = {
+                        id: member.id,
+                        memberId: member.id,
+                        email: member.auth?.email || member.email || email,
+                        name: member.customFields?.name || member.metadata?.name || email.split('@')[0],
+                        role: member.planConnections?.[0]?.planId || 'provider',
+                        signedInAt: new Date().toISOString()
+                    };
                     
-                    if (member) {
-                        const sessionUser = {
-                            id: member.id,
-                            memberId: member.id,
-                            email: member.email,
-                            name: member.customFields?.name || member.email,
-                            role: member.planConnections?.[0]?.planId || 'member',
-                            signedInAt: new Date().toISOString()
-                        };
-                        
-                        this.saveCurrentUser(sessionUser);
-                        
-                        return {
-                            success: true,
-                            user: sessionUser,
-                            message: 'Signed in successfully'
-                        };
+                    console.log('✅ Sign in successful:', sessionUser);
+                    this.saveCurrentUser(sessionUser);
+                    
+                    return {
+                        success: true,
+                        user: sessionUser,
+                        message: 'Signed in successfully'
+                    };
+                } else {
+                    throw new Error('Invalid response from Memberstack');
+                }
+            } catch (memberstackError) {
+                console.error('❌ Memberstack sign in error:', memberstackError);
+                
+                // Parse error message
+                let errorMessage = 'Invalid email or password';
+                if (memberstackError.message) {
+                    if (memberstackError.message.includes('password')) {
+                        errorMessage = 'Incorrect password';
+                    } else if (memberstackError.message.includes('email')) {
+                        errorMessage = 'Email not found';
+                    } else if (memberstackError.message.includes('network')) {
+                        errorMessage = 'Network error. Please check your connection.';
+                    } else {
+                        errorMessage = memberstackError.message;
                     }
-                } catch (memberstackError) {
-                    console.error('Memberstack sign in failed:', memberstackError);
-                    throw new Error('Invalid email or password');
-                }
-            } else {
-                // Fallback to mock authentication
-                console.log('Using mock authentication (Memberstack not available)');
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                
-                const user = this.mockUsers.find(u => u.email === email && u.password === password);
-                
-                if (!user) {
-                    throw new Error('Invalid email or password');
                 }
                 
-                const sessionUser = {
-                    id: user.id,
-                    memberId: user.memberId,
-                    email: user.email,
-                    name: user.name,
-                    role: user.role,
-                    signedInAt: new Date().toISOString()
-                };
-                
-                this.saveCurrentUser(sessionUser);
-                
-                return {
-                    success: true,
-                    user: sessionUser,
-                    message: 'Signed in successfully (mock)'
-                };
+                throw new Error(errorMessage);
             }
             
         } catch (error) {
+            console.error('Sign in error:', error);
             return {
                 success: false,
                 message: error.message
@@ -166,7 +162,7 @@ class AuthService {
         }
     }
 
-    // Sign up new user (Memberstack + fallback)
+    // Sign up new user (Memberstack only)
     async signUp(userData) {
         try {
             // Validate passwords match
@@ -174,88 +170,75 @@ class AuthService {
                 throw new Error('Passwords do not match');
             }
             
-            // Try Memberstack first
-            if (this.isInitialized && this.memberstack) {
-                try {
-                    const member = await this.memberstack.signUp({
-                        email: userData.email,
-                        password: userData.password,
-                        customFields: {
-                            name: userData.name,
-                            role: userData.role
-                        }
-                    });
-                    
-                    if (member) {
-                        const sessionUser = {
-                            id: member.id,
-                            memberId: member.id,
-                            email: member.email,
-                            name: userData.name,
-                            role: userData.role,
-                            signedInAt: new Date().toISOString()
-                        };
-                        
-                        this.saveCurrentUser(sessionUser);
-                        
-                        return {
-                            success: true,
-                            user: sessionUser,
-                            message: 'Account created successfully'
-                        };
-                    }
-                } catch (memberstackError) {
-                    console.error('Memberstack sign up failed:', memberstackError);
-                    if (memberstackError.message?.includes('email')) {
-                        throw new Error('An account with this email already exists');
-                    }
-                    throw new Error('Failed to create account. Please try again.');
-                }
-            } else {
-                // Fallback to mock authentication
-                console.log('Using mock sign up (Memberstack not available)');
-                await new Promise(resolve => setTimeout(resolve, 1500));
-                
-                // Check if email already exists
-                const existingUser = this.mockUsers.find(u => u.email === userData.email);
-                if (existingUser) {
-                    throw new Error('An account with this email already exists');
-                }
-                
-                // Create new user
-                const newUser = {
-                    id: `user_${Date.now()}`,
-                    memberId: `mem_${Math.random().toString(36).substr(2, 9)}`,
+            // Wait for Memberstack to initialize if needed
+            let waitCount = 0;
+            while (!this.isInitialized && waitCount < 10) {
+                console.log('Waiting for Memberstack to initialize...');
+                await new Promise(resolve => setTimeout(resolve, 500));
+                waitCount++;
+            }
+            
+            if (!this.isInitialized || !this.memberstack) {
+                throw new Error('Memberstack is not initialized. Please refresh the page and try again.');
+            }
+            
+            console.log('📝 Creating Memberstack account for:', userData.email);
+            
+            try {
+                const response = await this.memberstack.signUp({
                     email: userData.email,
                     password: userData.password,
-                    name: userData.name,
-                    role: userData.role,
-                    createdAt: new Date().toISOString()
-                };
+                    metadata: {
+                        name: userData.name,
+                        role: userData.role
+                    }
+                });
                 
-                // Add to mock users array
-                this.mockUsers.push(newUser);
+                console.log('Memberstack sign up response:', response);
                 
-                // Create session data (excluding password)
-                const sessionUser = {
-                    id: newUser.id,
-                    memberId: newUser.memberId,
-                    email: newUser.email,
-                    name: newUser.name,
-                    role: newUser.role,
-                    signedInAt: new Date().toISOString()
-                };
+                // Extract member data from response
+                const member = response.data || response.member || response;
                 
-                this.saveCurrentUser(sessionUser);
+                if (member && member.id) {
+                    const sessionUser = {
+                        id: member.id,
+                        memberId: member.id,
+                        email: member.auth?.email || member.email || userData.email,
+                        name: userData.name,
+                        role: userData.role,
+                        signedInAt: new Date().toISOString()
+                    };
+                    
+                    console.log('✅ Account created successfully:', sessionUser);
+                    this.saveCurrentUser(sessionUser);
+                    
+                    return {
+                        success: true,
+                        user: sessionUser,
+                        message: 'Account created successfully'
+                    };
+                } else {
+                    throw new Error('Invalid response from Memberstack');
+                }
+            } catch (memberstackError) {
+                console.error('❌ Memberstack sign up error:', memberstackError);
                 
-                return {
-                    success: true,
-                    user: sessionUser,
-                    message: 'Account created successfully (mock)'
-                };
+                let errorMessage = 'Failed to create account';
+                if (memberstackError.message) {
+                    if (memberstackError.message.includes('already')) {
+                        errorMessage = 'An account with this email already exists';
+                    } else if (memberstackError.message.includes('password')) {
+                        errorMessage = 'Password does not meet requirements';
+                    } else {
+                        errorMessage = memberstackError.message;
+                    }
+                }
+                
+                throw new Error(errorMessage);
             }
             
         } catch (error) {
+            console.error('Sign up error:', error);
             return {
                 success: false,
                 message: error.message
