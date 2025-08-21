@@ -11,6 +11,7 @@
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <!-- Webflow CMS Sync -->
     <script src="js/webflow-sync.js" defer></script>
+    <script src="js/webflow-provider-sync.js" defer></script>
     <style>
         /* SummerSchools.com Design Variables */
         :root {
@@ -1428,7 +1429,7 @@
                     </p>
                 </div>
 
-                <form id="providerForm" action="https://app.summerschools.com/api/providers" method="post">
+                <form id="providerForm">
                     <!-- School Information -->
                     <div class="form-section">
                         <h3 class="form-section-title">School Information</h3>
@@ -1591,7 +1592,7 @@
 
                     <!-- Submit Buttons -->
                     <div class="form-navigation" style="justify-content: center; gap: 16px;">
-                        <button type="submit" class="btn btn-primary main-button w-button">Update</button>
+                        <button type="submit" class="btn btn-primary main-button w-button">Save Provider</button>
                         <button type="button" class="btn btn-secondary" onclick="previewProvider()">Preview Provider</button>
                     </div>
                 </form>
