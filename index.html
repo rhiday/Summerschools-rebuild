@@ -9,28 +9,9 @@
     <link rel="stylesheet" href="fonts.css">
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-    <!-- LOCAL DEVELOPMENT AUTH - MEMBERSTACK CDN BLOCKED -->
-    <script>
-        // Local Authentication System (same as auth.html)
-        window.localAuth = {
-            getCurrentUser: function() {
-                try {
-                    const stored = localStorage.getItem('localAuthUser');
-                    return stored ? JSON.parse(stored) : null;
-                } catch (error) {
-                    localStorage.removeItem('localAuthUser');
-                    return null;
-                }
-            },
-            
-            signOut: function() {
-                localStorage.removeItem('localAuthUser');
-                return { success: true };
-            }
-        };
-        
-        console.log('✅ Local auth system ready for dashboard');
-    </script>
+    <!-- PRODUCTION-READY AUTHENTICATION WITH QUICK FIX -->
+    <script src="js/auth-environment.js"></script>
+    <script src="js/auth-quick-fix.js"></script>
     <!-- Webflow CMS Sync -->
     <script src="js/webflow-sync.js" defer></script>
     <script src="js/webflow-provider-sync.js" defer></script>
