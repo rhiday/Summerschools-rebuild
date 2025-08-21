@@ -183,19 +183,19 @@
             <p>Sign in to access your course dashboard</p>
         </div>
         
-        <!-- SIMPLE MEMBERSTACK LOGIN FORM -->
-        <form data-ms-form="login">
+        <!-- MEMBERSTACK LOGIN FORM - CORRECT ATTRIBUTES -->
+        <form data-ms-form="login" data-ms-redirect="/index.html">
             <div class="form-group">
                 <label for="email">Email Address</label>
-                <input type="email" name="email" id="email" required value="shahriar.rhiday@gmail.com">
+                <input type="email" data-ms-member="email" name="email" id="email" required value="shahriar.rhiday@gmail.com">
             </div>
             
             <div class="form-group">
                 <label for="password">Password</label>
-                <input type="password" name="password" id="password" required>
+                <input type="password" data-ms-member="password" name="password" id="password" required>
             </div>
             
-            <button type="submit" class="btn btn-primary">Sign In</button>
+            <button type="submit" class="btn btn-primary" data-ms-button="login">Sign In</button>
         </form>
         
         <div class="auth-switch">
@@ -205,43 +205,68 @@
     </div>
 
     <script>
-        // SIMPLE MEMBERSTACK INTEGRATION - OFFICIAL PATTERN
+        // ENHANCED MEMBERSTACK INTEGRATION
         window.addEventListener('load', function() {
             console.log('Page loaded, checking Memberstack...');
             
-            // Check if Memberstack loaded
-            if (window.MemberStack) {
-                console.log('✅ Memberstack found');
-                
-                // Wait for Memberstack to be ready
-                window.MemberStack.onReady.then(() => {
-                    console.log('🎉 Memberstack ready');
+            // Multiple loading checks
+            function checkMemberstack() {
+                if (window.MemberStack && window.MemberStack.onReady) {
+                    console.log('✅ Memberstack found');
                     
-                    // Check if user is already logged in
-                    if (window.$memberstackDom) {
-                        window.$memberstackDom.getCurrentMember().then(member => {
-                            if (member && member.data) {
-                                console.log('User already logged in, redirecting...');
-                                window.location.href = 'index.html';
-                            } else {
-                                console.log('No current member - ready for login');
-                            }
-                        }).catch(err => {
-                            console.log('No current member (normal for logged out users)');
-                        });
-                    }
-                    
-                    // Set up success redirect
-                    window.$memberstackDom.memberStack.updateOptions({
-                        loginRedirectUrl: window.location.origin + '/index.html'
+                    window.MemberStack.onReady.then(() => {
+                        console.log('🎉 Memberstack ready');
+                        
+                        // Check if user is already logged in
+                        if (window.$memberstackDom) {
+                            window.$memberstackDom.getCurrentMember().then(member => {
+                                if (member && member.data) {
+                                    console.log('User already logged in, redirecting...');
+                                    window.location.href = '/index.html';
+                                } else {
+                                    console.log('Ready for login');
+                                }
+                            }).catch(err => {
+                                console.log('No current member');
+                            });
+                        }
+                        
+                    }).catch(error => {
+                        console.error('Memberstack onReady error:', error);
                     });
                     
-                }).catch(error => {
-                    console.error('Memberstack onReady error:', error);
+                } else if (window.$memberstackDom) {
+                    console.log('✅ $memberstackDom found directly');
+                    // Check if already logged in
+                    window.$memberstackDom.getCurrentMember().then(member => {
+                        if (member && member.data) {
+                            console.log('User already logged in, redirecting...');
+                            window.location.href = '/index.html';
+                        }
+                    }).catch(err => {
+                        console.log('Ready for login');
+                    });
+                } else {
+                    console.log('Memberstack not yet loaded, retrying...');
+                    setTimeout(checkMemberstack, 500);
+                }
+            }
+            
+            // Start checking
+            checkMemberstack();
+        });
+
+        // Manual form handling as backup
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form[data-ms-form="login"]');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    console.log('Form submission detected');
+                    // Let Memberstack handle it, but add some debugging
+                    setTimeout(() => {
+                        console.log('Form submitted, checking for errors...');
+                    }, 100);
                 });
-                
-            } else {
-                console.error('❌ Memberstack not found - check script loading');
             }
         });
     </script>

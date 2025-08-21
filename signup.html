@@ -160,33 +160,33 @@
             <p>Join our platform to manage your courses</p>
         </div>
         
-        <!-- SIMPLE MEMBERSTACK SIGNUP FORM -->
-        <form data-ms-form="signup">
+        <!-- MEMBERSTACK SIGNUP FORM - CORRECT ATTRIBUTES -->
+        <form data-ms-form="signup" data-ms-redirect="/index.html">
             <div class="form-group">
                 <label for="name">Full Name</label>
-                <input type="text" name="name" id="name" required>
+                <input type="text" data-ms-member="name" name="name" id="name" required>
             </div>
             
             <div class="form-group">
                 <label for="email">Email Address</label>
-                <input type="email" name="email" id="email" required>
+                <input type="email" data-ms-member="email" name="email" id="email" required>
             </div>
             
             <div class="form-group">
                 <label for="password">Password</label>
-                <input type="password" name="password" id="password" required minlength="6">
+                <input type="password" data-ms-member="password" name="password" id="password" required minlength="6">
             </div>
             
             <div class="form-group">
                 <label for="role">Account Type</label>
-                <select name="role" id="role" required>
+                <select data-ms-member="custom-field:role" name="role" id="role" required>
                     <option value="">Select account type</option>
                     <option value="provider">Course Provider</option>
                     <option value="admin">Platform Admin</option>
                 </select>
             </div>
             
-            <button type="submit" class="btn btn-primary">Create Account</button>
+            <button type="submit" class="btn btn-primary" data-ms-button="signup">Create Account</button>
         </form>
         
         <div class="auth-switch">
