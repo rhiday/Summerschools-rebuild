@@ -16,24 +16,35 @@ window.MEMBERSTACK_CONFIG = {
 };
 
 // Initialize Memberstack when DOM is ready
-if (typeof window !== 'undefined' && window.MemberStack) {
-    window.$memberstackDom = window.MemberStack.init({
-        publicKey: window.MEMBERSTACK_CONFIG.publicKey
-    });
-    
-    console.log('Memberstack initialized with public key');
-} else {
-    console.log('Waiting for Memberstack DOM package to load...');
-    
-    // Retry initialization after DOM package loads
-    window.addEventListener('load', () => {
-        setTimeout(() => {
-            if (window.MemberStack) {
+document.addEventListener('DOMContentLoaded', function() {
+    // Wait a moment for Memberstack script to fully load
+    setTimeout(function() {
+        if (typeof window.memberstack !== 'undefined') {
+            // Memberstack 2.0 is already initialized via data attribute
+            window.$memberstackDom = window.memberstack;
+            console.log('✅ Memberstack 2.0 already initialized');
+        } else if (typeof window.MemberStack !== 'undefined') {
+            // Initialize Memberstack 1.0
+            try {
                 window.$memberstackDom = window.MemberStack.init({
                     publicKey: window.MEMBERSTACK_CONFIG.publicKey
                 });
-                console.log('Memberstack initialized after delay');
+                console.log('✅ Memberstack 1.0 initialized with public key');
+            } catch (error) {
+                console.error('❌ Memberstack initialization error:', error);
             }
-        }, 1000);
-    });
-}
+        } else {
+            console.warn('⚠️ Memberstack not found. Retrying...');
+            
+            // Final retry after longer delay
+            setTimeout(function() {
+                if (typeof window.memberstack !== 'undefined') {
+                    window.$memberstackDom = window.memberstack;
+                    console.log('✅ Memberstack 2.0 found after retry');
+                } else {
+                    console.error('❌ Memberstack could not be initialized');
+                }
+            }, 2000);
+        }
+    }, 500);
+});

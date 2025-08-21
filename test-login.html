@@ -109,8 +109,8 @@
         <div id="console"></div>
     </div>
 
-    <!-- Memberstack DOM Package -->
-    <script src="https://static.memberstack.com/scripts/v1/memberstack-dom.js" data-memberstack-app="pk_4f1166cfc3dc4380712e"></script>
+    <!-- Memberstack 2.0 -->
+    <script data-memberstack-id="pk_4f1166cfc3dc4380712e" src="https://static.memberstack.com/scripts/v1/memberstack.js" async></script>
     
     <script>
         let memberstack = null;
@@ -145,32 +145,36 @@
             log('Starting Memberstack initialization test...', 'info');
             
             try {
-                // Check if Memberstack library is loaded
-                if (typeof window.MemberStack === 'undefined') {
-                    log('❌ MemberStack is not defined', 'error');
-                    log('Waiting 2 seconds and retrying...', 'warning');
-                    
-                    await new Promise(resolve => setTimeout(resolve, 2000));
-                    
-                    if (typeof window.MemberStack === 'undefined') {
-                        log('❌ MemberStack still not available', 'error');
-                        return;
-                    }
+                // Check if Memberstack 2.0 is loaded (auto-initialized)
+                if (typeof window.memberstack !== 'undefined') {
+                    log('✅ Memberstack 2.0 is auto-initialized', 'success');
+                    memberstack = window.memberstack;
+                    log('Memberstack instance ready', 'success');
+                    return;
                 }
                 
-                log('✅ MemberStack library is loaded', 'success');
+                // Check if old MemberStack is available
+                if (typeof window.MemberStack !== 'undefined') {
+                    log('Found MemberStack 1.0, initializing...', 'info');
+                    memberstack = window.MemberStack.init({
+                        publicKey: 'pk_4f1166cfc3dc4380712e'
+                    });
+                    log('✅ Memberstack 1.0 initialized', 'success');
+                    window.$memberstackDom = memberstack;
+                    return;
+                }
                 
-                // Initialize Memberstack
-                log('Initializing Memberstack with public key...', 'info');
-                memberstack = window.MemberStack.init({
-                    publicKey: 'pk_4f1166cfc3dc4380712e'
-                });
+                // Wait and retry
+                log('Memberstack not found, waiting 2 seconds...', 'warning');
+                await new Promise(resolve => setTimeout(resolve, 2000));
                 
-                log('✅ Memberstack initialized successfully', 'success');
-                log('Memberstack instance: ' + JSON.stringify(memberstack ? 'Created' : 'Failed'), 'info');
-                
-                // Store globally for other tests
-                window.$memberstackDom = memberstack;
+                if (typeof window.memberstack !== 'undefined') {
+                    memberstack = window.memberstack;
+                    log('✅ Memberstack 2.0 found after delay', 'success');
+                } else {
+                    log('❌ Memberstack not available', 'error');
+                    log('Check that the script is loaded properly', 'error');
+                }
                 
             } catch (error) {
                 log('❌ Initialization error: ' + error.message, 'error');

@@ -18,23 +18,42 @@ class AuthService {
         try {
             this.initializationAttempts++;
             
-            // Wait for Memberstack DOM instance to be available
-            if (typeof window !== 'undefined' && window.$memberstackDom) {
-                this.memberstack = window.$memberstackDom;
+            // Check for Memberstack 2.0 (auto-initialized)
+            if (typeof window !== 'undefined' && window.memberstack) {
+                this.memberstack = window.memberstack;
                 this.isInitialized = true;
-                console.log('✅ Memberstack initialized successfully');
+                console.log('✅ Memberstack 2.0 detected and ready');
                 
                 // Check if user is already signed in
                 await this.checkExistingSession();
-            } else if (typeof window !== 'undefined' && window.MemberStack) {
-                // Try to initialize if not already done
-                console.log('Initializing Memberstack DOM...');
-                window.$memberstackDom = window.MemberStack.init({
-                    publicKey: 'pk_4f1166cfc3dc4380712e'
-                });
-                setTimeout(() => this.initializeMemberstack(), 500);
-            } else if (this.initializationAttempts < this.maxAttempts) {
-                // Retry after a short delay
+            }
+            // Check for initialized $memberstackDom
+            else if (typeof window !== 'undefined' && window.$memberstackDom) {
+                this.memberstack = window.$memberstackDom;
+                this.isInitialized = true;
+                console.log('✅ Using initialized $memberstackDom');
+                
+                // Check if user is already signed in
+                await this.checkExistingSession();
+            }
+            // Try to initialize Memberstack 1.0
+            else if (typeof window !== 'undefined' && window.MemberStack) {
+                console.log('Initializing Memberstack 1.0...');
+                try {
+                    window.$memberstackDom = window.MemberStack.init({
+                        publicKey: 'pk_4f1166cfc3dc4380712e'
+                    });
+                    this.memberstack = window.$memberstackDom;
+                    this.isInitialized = true;
+                    console.log('✅ Memberstack 1.0 initialized');
+                    await this.checkExistingSession();
+                } catch (initError) {
+                    console.error('Memberstack init error:', initError);
+                    setTimeout(() => this.initializeMemberstack(), 500);
+                }
+            }
+            // Retry if not ready yet
+            else if (this.initializationAttempts < this.maxAttempts) {
                 console.log(`Waiting for Memberstack... (attempt ${this.initializationAttempts}/${this.maxAttempts})`);
                 setTimeout(() => this.initializeMemberstack(), 500);
             } else {
