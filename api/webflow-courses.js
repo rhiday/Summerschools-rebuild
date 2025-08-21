@@ -312,6 +312,114 @@ export default async function handler(req, res) {
                     data: result
                 });
 
+            case 'ARCHIVE':
+                // Archive a course by setting _archived field to true
+                if (!courseId) {
+                    return res.status(400).json({
+                        success: false,
+                        message: 'Course ID is required for archiving'
+                    });
+                }
+
+                // First, get the current course data
+                const archiveGetResponse = await fetch(`https://api.webflow.com/v2/collections/${COLLECTION_ID}/items/${courseId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${WEBFLOW_API_TOKEN}`
+                    }
+                });
+
+                if (!archiveGetResponse.ok) {
+                    throw new Error(`Failed to fetch course for archiving`);
+                }
+
+                const courseToArchive = await archiveGetResponse.json();
+                
+                // Update with archived status
+                const archivedCourse = {
+                    fieldData: {
+                        ...courseToArchive.fieldData,
+                        '_archived': true
+                    },
+                    isDraft: courseToArchive.isDraft
+                };
+
+                const archiveResponse = await fetch(`https://api.webflow.com/v2/collections/${COLLECTION_ID}/items/${courseId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${WEBFLOW_API_TOKEN}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(archivedCourse)
+                });
+
+                if (!archiveResponse.ok) {
+                    const error = await archiveResponse.text();
+                    throw new Error(`Failed to archive course: ${error}`);
+                }
+
+                result = await archiveResponse.json();
+                
+                return res.status(200).json({
+                    success: true,
+                    message: 'Course archived successfully',
+                    data: result
+                });
+
+            case 'RESTORE':
+                // Restore an archived course by setting _archived field to false
+                if (!courseId) {
+                    return res.status(400).json({
+                        success: false,
+                        message: 'Course ID is required for restoring'
+                    });
+                }
+
+                // First, get the current course data
+                const restoreGetResponse = await fetch(`https://api.webflow.com/v2/collections/${COLLECTION_ID}/items/${courseId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${WEBFLOW_API_TOKEN}`
+                    }
+                });
+
+                if (!restoreGetResponse.ok) {
+                    throw new Error(`Failed to fetch course for restoring`);
+                }
+
+                const courseToRestore = await restoreGetResponse.json();
+                
+                // Update with restored status
+                const restoredCourse = {
+                    fieldData: {
+                        ...courseToRestore.fieldData,
+                        '_archived': false
+                    },
+                    isDraft: courseToRestore.isDraft
+                };
+
+                const restoreResponse = await fetch(`https://api.webflow.com/v2/collections/${COLLECTION_ID}/items/${courseId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${WEBFLOW_API_TOKEN}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(restoredCourse)
+                });
+
+                if (!restoreResponse.ok) {
+                    const error = await restoreResponse.text();
+                    throw new Error(`Failed to restore course: ${error}`);
+                }
+
+                result = await restoreResponse.json();
+                
+                return res.status(200).json({
+                    success: true,
+                    message: 'Course restored successfully',
+                    data: result
+                });
+
             default:
                 return res.status(405).json({
                     success: false,

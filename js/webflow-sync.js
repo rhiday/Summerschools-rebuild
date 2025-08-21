@@ -72,8 +72,8 @@ class WebflowSync {
                 price: fieldData.fees ? `£${fieldData.fees}` : '£0',
                 duration: fieldData.duration || '',
                 dates: fieldData.dates || '',
-                // Map Webflow status to display status
-                status: item.isDraft ? 'In Review' : 'Published',
+                // Map Webflow status to display status with archive consideration
+                status: fieldData._archived ? 'Archived' : (item.isDraft ? 'In Review' : 'Published'),
                 emoji: '📚', // Default emoji
                 archived: fieldData._archived || false,
                 location: fieldData.destination || '',
@@ -233,12 +233,14 @@ class WebflowSync {
         }
     }
 
-    // Archive a course (update with archived status)
+    // Archive a course (update with archived status in Webflow)
     async archiveCourse(courseId) {
         try {
-            // Get the course first
-            const course = this.courses.find(c => c._id === courseId);
+            // Get the course first using the correct ID format
+            const course = this.courses.find(c => (c.id || c._id) === courseId);
             if (!course) throw new Error('Course not found');
+
+            console.log('Archiving course:', courseId, course);
 
             const response = await fetch(this.apiEndpoint, {
                 method: 'POST',
@@ -246,10 +248,8 @@ class WebflowSync {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    action: 'UPDATE',
-                    courseId: courseId,
-                    ...course.fields,
-                    '_archived': true
+                    action: 'ARCHIVE',
+                    courseId: courseId
                 })
             });
 
@@ -267,12 +267,10 @@ class WebflowSync {
         }
     }
 
-    // Restore an archived course
+    // Restore an archived course (unarchive in Webflow)
     async restoreCourse(courseId) {
         try {
-            // Get the course first
-            const course = this.courses.find(c => c._id === courseId);
-            if (!course) throw new Error('Course not found');
+            console.log('Restoring course:', courseId);
 
             const response = await fetch(this.apiEndpoint, {
                 method: 'POST',
@@ -280,10 +278,8 @@ class WebflowSync {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    action: 'UPDATE',
-                    courseId: courseId,
-                    ...course.fields,
-                    '_archived': false
+                    action: 'RESTORE',
+                    courseId: courseId
                 })
             });
 
