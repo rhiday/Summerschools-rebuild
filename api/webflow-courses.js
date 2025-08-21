@@ -48,33 +48,37 @@ function formatCourseForWebflow(courseData) {
     const maxAge = courseData['max-age'] || courseData.maxAge || 18;
     const ageRange = `${minAge}-${maxAge}`;
 
-    // Simple field mapping based on what's actually in your Webflow collection
+    // Map form fields to Webflow collection fields (exact matches)
     // Updated for API v2 format
     const webflowItem = {
         fieldData: {
-            // Basic required fields
+            // Required fields
             name: courseName,
             slug: generateSlug(courseName),
             
-            // Simple text fields only - avoid complex objects
-            age: ageRange,
-            fees: parseFloat(courseData['course-fee'] || courseData.courseFee || 0),
+            // Age fields (separate min/max in Webflow)
+            age: ageRange, // Keep as range text for compatibility
+            'minimum-age': parseInt(minAge) || 13,
+            'maximum-age': parseInt(maxAge) || 18,
+            
+            // Basic course info
+            fees: (courseData['course-fee'] || courseData.courseFee || '').toString(),
             duration: courseData['course-duration'] || courseData.courseDuration || '',
-            location: courseData.location || '',
-            
-            // Dates as ISO strings
             dates: `${courseData['start-date'] || ''} to ${courseData['end-date'] || ''}`,
+            destination: courseData.location || '',
             
-            // Provider info
-            provider: courseData['contact-email'] || courseData.contactEmail || '',
+            // Contact and provider info
+            contactemail: courseData['contact-email'] || courseData.contactEmail || '',
+            providerlink: courseData['provider-link'] || courseData.providerLink || '',
             
-            // Rich text content
-            accommodation: courseData.accommodation || '',
-            'tuition-details': courseData.tuition || '',
-            'extra-activities': courseData['extra-activities'] || courseData.extraActivities || '',
+            // Rich text content fields (match exact Webflow field names)
+            accomodation: courseData.accommodation || '',
+            tuition: courseData.tuition || '',
+            'extra-curricular-activities': courseData['extra-activities'] || courseData.extraActivities || '',
             
-            // Status - moved to top level in v2
-            '_archived': false
+            // Course description
+            description: courseData['course-details'] || courseData.courseDetails || '',
+            summary: courseData['course-details'] || courseData.courseDetails || ''
         },
         isDraft: true
     };
@@ -274,12 +278,12 @@ export default async function handler(req, res) {
                 // Create a copy with modified name
                 const duplicatedCourse = {
                     ...originalCourse,
-                    fields: {
-                        ...originalCourse.fields,
-                        name: `${originalCourse.fields.name} (Copy)`,
-                        slug: `${originalCourse.fields.slug}-copy-${Date.now()}`,
-                        '_draft': true
-                    }
+                    fieldData: {
+                        ...originalCourse.fieldData,
+                        name: `${originalCourse.fieldData.name} (Copy)`,
+                        slug: `${originalCourse.fieldData.slug}-copy-${Date.now()}`
+                    },
+                    isDraft: true
                 };
                 
                 delete duplicatedCourse._id;
