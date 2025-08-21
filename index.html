@@ -2154,70 +2154,74 @@
             dropdown.classList.toggle('show');
         }
 
-        async function signOut() {
-            try {
-                if (window.$memberstackDom) {
-                    await window.$memberstackDom.signOut();
-                }
-                window.location.href = 'auth.html';
-            } catch (error) {
-                console.error('Sign out error:', error);
-                // Fallback
-                localStorage.removeItem('currentUser');
+        // SIMPLE MEMBERSTACK FUNCTIONS
+        function signOut() {
+            if (window.$memberstackDom) {
+                window.$memberstackDom.signOut().then(() => {
+                    window.location.href = 'auth.html';
+                }).catch(error => {
+                    console.error('Sign out error:', error);
+                    window.location.href = 'auth.html';
+                });
+            } else {
                 window.location.href = 'auth.html';
             }
         }
 
-        async function initializeUserInterface() {
-            try {
-                // Wait for Memberstack to be ready
-                if (!window.$memberstackDom) {
-                    if (window.MemberStack && window.MemberStack.onReady) {
-                        console.log('Waiting for Memberstack to initialize...');
-                        await window.MemberStack.onReady;
+        function initializeUserInterface() {
+            console.log('Initializing user interface...');
+            
+            // Simple Memberstack check
+            if (window.MemberStack) {
+                window.MemberStack.onReady.then(() => {
+                    console.log('✅ Memberstack ready');
+                    
+                    if (window.$memberstackDom) {
+                        window.$memberstackDom.getCurrentMember().then(member => {
+                            if (member && member.data) {
+                                console.log('✅ User authenticated:', member.data);
+                                
+                                // Update user display with simple data
+                                const userData = member.data;
+                                const displayName = userData.customFields?.name || userData.email?.split('@')[0] || 'User';
+                                const userRole = userData.customFields?.role || 'Provider';
+                                
+                                document.getElementById('user-name').textContent = displayName;
+                                document.getElementById('user-email').textContent = userData.email || '';
+                                document.getElementById('user-role').textContent = userRole;
+                                
+                                // Simple avatar initials
+                                const initials = displayName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                                document.getElementById('user-avatar').innerHTML = `<span>${initials}</span>`;
+                                
+                                // Store for provider sync - SIMPLE
+                                window.currentMember = {
+                                    id: userData.id,
+                                    memberId: userData.id,
+                                    email: userData.email,
+                                    name: displayName,
+                                    role: userRole
+                                };
+                                
+                            } else {
+                                console.log('❌ No authenticated user, redirecting...');
+                                window.location.href = 'auth.html';
+                            }
+                        }).catch(error => {
+                            console.error('Authentication check failed:', error);
+                            window.location.href = 'auth.html';
+                        });
                     } else {
-                        console.log('Memberstack not yet loaded, retrying...');
-                        setTimeout(() => initializeUserInterface(), 500);
-                        return;
+                        console.error('❌ $memberstackDom not available');
+                        window.location.href = 'auth.html';
                     }
-                }
-
-                // Check authentication
-                const member = await window.$memberstackDom.getCurrentMember();
-                if (!member || !member.data) {
-                    console.log('User not authenticated, redirecting to auth page...');
+                }).catch(error => {
+                    console.error('Memberstack initialization failed:', error);
                     window.location.href = 'auth.html';
-                    return;
-                }
-
-                // Load user info
-                const userData = member.data;
-                console.log('Current member data:', userData);
-                
-                // Update user display
-                const displayName = userData.customFields?.name || userData.email?.split('@')[0] || 'User';
-                const userRole = userData.customFields?.role || 'Provider';
-                
-                document.getElementById('user-name').textContent = displayName;
-                document.getElementById('user-email').textContent = userData.email || '';
-                document.getElementById('user-role').textContent = userRole;
-                
-                // Generate user initials for avatar
-                const initials = displayName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-                document.getElementById('user-avatar').innerHTML = `<span>${initials}</span>`;
-                
-                // Store member info globally for provider sync
-                window.currentMember = {
-                    id: userData.id,
-                    memberId: userData.id,
-                    email: userData.email,
-                    name: displayName,
-                    role: userRole
-                };
-                
-            } catch (error) {
-                console.error('Authentication check failed:', error);
-                window.location.href = 'auth.html';
+                });
+            } else {
+                console.error('❌ Memberstack not loaded');
+                setTimeout(() => initializeUserInterface(), 1000); // Retry once
             }
         }
 
