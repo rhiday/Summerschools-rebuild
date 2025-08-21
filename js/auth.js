@@ -36,14 +36,19 @@ class AuthService {
     // Initialize Memberstack
     async initializeMemberstack() {
         try {
-            // Wait for Memberstack to be available
-            if (typeof window !== 'undefined' && window.MemberStack) {
-                this.memberstack = window.MemberStack;
+            // Wait for Memberstack DOM instance to be available
+            if (typeof window !== 'undefined' && window.$memberstackDom) {
+                this.memberstack = window.$memberstackDom;
                 this.isInitialized = true;
                 console.log('Memberstack initialized successfully');
                 
                 // Check if user is already signed in
                 await this.checkExistingSession();
+            } else if (typeof window !== 'undefined' && window.MemberStack) {
+                // Try to initialize if not already done
+                console.log('Initializing Memberstack DOM...');
+                // The public key should be set in memberstack-config.js
+                setTimeout(() => this.initializeMemberstack(), 500);
             } else {
                 // Retry after a short delay
                 setTimeout(() => this.initializeMemberstack(), 500);

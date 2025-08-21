@@ -10,7 +10,9 @@
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <!-- Memberstack DOM Package -->
-    <script src="https://static.memberstack.com/scripts/v1/memberstack-dom.js"></script>
+    <script src="https://static.memberstack.com/scripts/v1/memberstack-dom.js" data-memberstack-app="app_clxxx"></script>
+    <!-- Memberstack Configuration -->
+    <script src="js/memberstack-config.js"></script>
     <!-- Authentication -->
     <script src="js/auth.js" defer></script>
     <!-- Webflow CMS Sync -->
@@ -2167,13 +2169,22 @@
         }
 
         function initializeUserInterface() {
+            // Check if authService is available
+            if (!window.authService) {
+                console.log('Auth service not yet loaded, retrying...');
+                setTimeout(() => initializeUserInterface(), 500);
+                return;
+            }
+
             // Check authentication
-            if (window.authService && !window.authService.requireAuth()) {
-                return; // Will redirect to auth page
+            if (!window.authService.isAuthenticated()) {
+                console.log('User not authenticated, redirecting to auth page...');
+                window.location.href = 'auth.html';
+                return;
             }
 
             // Load user info
-            const user = window.authService ? window.authService.getCurrentUser() : null;
+            const user = window.authService.getCurrentUser();
             if (user) {
                 // Update user display
                 document.getElementById('user-name').textContent = user.name || 'User';
