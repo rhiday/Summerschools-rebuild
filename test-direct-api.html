@@ -104,6 +104,23 @@
             <div id="raw-status" class="status info">Ready to test...</div>
             <pre id="raw-result"></pre>
         </div>
+
+        <div class="test-section">
+            <h3>API Structure Test</h3>
+            <button onclick="checkAPIStructure()">Check API Structure</button>
+            <div id="structure-status" class="status info">Ready to test...</div>
+            <pre id="structure-result"></pre>
+        </div>
+
+        <div class="test-section">
+            <h3>Signup Fields Test</h3>
+            <input type="email" id="test-signup-email" placeholder="Test email for signup" value="test@example.com">
+            <input type="password" id="test-signup-password" placeholder="Test password" value="testpass123">
+            <br>
+            <button onclick="testSignupFields()">Test Signup Field Requirements</button>
+            <div id="signup-fields-status" class="status info">Ready to test...</div>
+            <pre id="signup-fields-result"></pre>
+        </div>
     </div>
 
     <!-- Load our direct API auth service -->
@@ -253,6 +270,40 @@
             } catch (error) {
                 updateStatus('raw-status', `❌ Raw API error: ${error.message}`, 'error');
                 updateResult('raw-result', { error: error.message, stack: error.stack });
+            }
+        }
+
+        async function checkAPIStructure() {
+            updateStatus('structure-status', 'Checking API structure...', 'info');
+            
+            try {
+                const result = await window.memberstackDirectAuth.checkAPIStructure();
+                updateStatus('structure-status', '✅ API structure check complete', 'success');
+                updateResult('structure-result', result);
+            } catch (error) {
+                updateStatus('structure-status', `❌ Error: ${error.message}`, 'error');
+                updateResult('structure-result', { error: error.message });
+            }
+        }
+
+        async function testSignupFields() {
+            const email = document.getElementById('test-signup-email').value;
+            const password = document.getElementById('test-signup-password').value;
+            
+            if (!email || !password) {
+                updateStatus('signup-fields-status', 'Please enter test email and password', 'error');
+                return;
+            }
+
+            updateStatus('signup-fields-status', 'Testing signup field requirements...', 'info');
+            
+            try {
+                const result = await window.memberstackDirectAuth.testSignupFields(email, password);
+                updateStatus('signup-fields-status', '✅ Signup fields test complete', 'success');
+                updateResult('signup-fields-result', result);
+            } catch (error) {
+                updateStatus('signup-fields-status', `❌ Error: ${error.message}`, 'error');
+                updateResult('signup-fields-result', { error: error.message });
             }
         }
 

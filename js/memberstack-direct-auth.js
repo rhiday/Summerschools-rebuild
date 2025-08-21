@@ -104,20 +104,37 @@ class MemberstackDirectAuth {
 
             console.log('📝 Creating account via direct Memberstack API for:', userData.email);
 
+            // Try different signup payload structures
+            const signupPayload = {
+                email: userData.email,
+                password: userData.password,
+                // Try multiple field naming conventions
+                customFields: {
+                    name: userData.name,
+                    role: userData.role,
+                    fullName: userData.name,
+                    accountType: userData.role
+                },
+                metadata: {
+                    name: userData.name,
+                    role: userData.role,
+                    signupSource: 'course-platform'
+                },
+                // Also try top-level fields
+                name: userData.name,
+                role: userData.role
+            };
+
+            console.log('Signup payload:', signupPayload);
+
             const response = await fetch(`${this.apiBase}/auth/signup`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-API-KEY': this.publicKey
+                    'X-API-KEY': this.publicKey,
+                    'Accept': 'application/json'
                 },
-                body: JSON.stringify({
-                    email: userData.email,
-                    password: userData.password,
-                    customFields: {
-                        name: userData.name,
-                        role: userData.role
-                    }
-                })
+                body: JSON.stringify(signupPayload)
             });
 
             console.log('Memberstack signup response status:', response.status);
@@ -255,6 +272,112 @@ class MemberstackDirectAuth {
             return false;
         }
         return true;
+    }
+
+    // Check Memberstack API structure and available endpoints
+    async checkAPIStructure() {
+        console.log('🔍 Checking Memberstack API structure...');
+        
+        const endpoints = [
+            { url: `${this.apiBase}/auth/login`, method: 'OPTIONS' },
+            { url: `${this.apiBase}/auth/signup`, method: 'OPTIONS' },
+            { url: `${this.apiBase}/members`, method: 'OPTIONS' },
+            { url: 'https://api.memberstack.com/v2/auth/login', method: 'OPTIONS' },
+            { url: 'https://api.memberstack.com/v2/members', method: 'OPTIONS' }
+        ];
+
+        const results = {};
+
+        for (const endpoint of endpoints) {
+            try {
+                const response = await fetch(endpoint.url, {
+                    method: endpoint.method,
+                    headers: {
+                        'X-API-KEY': this.publicKey
+                    }
+                });
+
+                results[endpoint.url] = {
+                    status: response.status,
+                    headers: Object.fromEntries(response.headers.entries()),
+                    accessible: response.status < 400
+                };
+
+            } catch (error) {
+                results[endpoint.url] = {
+                    error: error.message,
+                    accessible: false
+                };
+            }
+        }
+
+        console.log('API Structure Results:', results);
+        return results;
+    }
+
+    // Test signup with minimal fields to see what's required
+    async testSignupFields(email, password) {
+        console.log('🧪 Testing signup field requirements...');
+        
+        const testPayloads = [
+            // Minimal payload
+            { email, password },
+            // With customFields
+            { email, password, customFields: { name: 'Test User' } },
+            // With metadata
+            { email, password, metadata: { name: 'Test User' } },
+            // With top-level fields
+            { email, password, name: 'Test User', role: 'provider' }
+        ];
+
+        const results = {};
+
+        for (let i = 0; i < testPayloads.length; i++) {
+            const payload = testPayloads[i];
+            console.log(`Testing payload ${i + 1}:`, payload);
+
+            try {
+                const response = await fetch(`${this.apiBase}/auth/signup`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-KEY': this.publicKey
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const responseText = await response.text();
+                let responseData;
+                
+                try {
+                    responseData = JSON.parse(responseText);
+                } catch {
+                    responseData = responseText;
+                }
+
+                results[`payload_${i + 1}`] = {
+                    status: response.status,
+                    success: response.ok,
+                    data: responseData,
+                    payload: payload
+                };
+
+                // If successful, we found the right structure
+                if (response.ok) {
+                    console.log(`✅ Payload ${i + 1} worked!`, payload);
+                    break;
+                }
+
+            } catch (error) {
+                results[`payload_${i + 1}`] = {
+                    error: error.message,
+                    payload: payload
+                };
+            }
+        }
+
+        console.log('Signup Field Test Results:', results);
+        return results;
     }
 
     // Alternative login method for testing different endpoints
